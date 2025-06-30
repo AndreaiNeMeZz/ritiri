@@ -92,7 +92,8 @@
                     <form id="add-pickup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 border-b pb-2">Cliente</h4>
                         <input type="text" id="client-name" placeholder="Fiera" class="p-3 border rounded-lg" required>
-                        <input type="text" id="client-email" placeholder="Stand" class="p-3 border rounded-lg" required>
+                        <input type="text" id="client-stand" placeholder="Stand" class="p-3 border rounded-lg" required>
+                        <input type="email" id="client-notification-email" placeholder="Email Notifiche Cliente" class="p-3 border rounded-lg md:col-span-2" required>
                         
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 mt-4 border-b pb-2">Dati Spedizione</h4>
                         <input type="number" id="pallet-count" placeholder="Numero Bancali/Colli" class="p-3 border rounded-lg" required min="1">
@@ -168,7 +169,6 @@
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            // Non usiamo più un percorso fisso, verrà determinato dopo il login del magazzino.
         } catch (error) {
             console.error("Errore di configurazione Firebase:", error);
             showToast("Configurazione Firebase mancante o errata.", true);
@@ -283,11 +283,12 @@
             
             const palletCountValue = document.getElementById('pallet-count').value;
             const clientNameValue = document.getElementById('client-name').value;
-            const clientEmailValue = document.getElementById('client-email').value;
+            const clientStandValue = document.getElementById('client-stand').value;
+            const clientNotificationEmailValue = document.getElementById('client-notification-email').value;
             const pickupAddressValue = document.getElementById('pickup-address').value;
 
-            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientEmailValue.trim()) {
-                showToast("Fiera, Stand e Indirizzo sono obbligatori.", true); return;
+            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim() || !clientNotificationEmailValue.trim()) {
+                showToast("Tutti i campi cliente e indirizzo sono obbligatori.", true); return;
             }
             if (!palletCountValue || isNaN(parseInt(palletCountValue)) || parseInt(palletCountValue) < 1) {
                 showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true); return;
@@ -316,8 +317,9 @@
             try {
                 await addDoc(pickupsCollection, {
                     warehouseId: currentWarehouseId,
-                    clientName: clientNameValue,
-                    clientEmail: clientEmailValue,
+                    clientName: clientNameValue, // Fiera
+                    clientStand: clientStandValue, // Stand
+                    clientNotificationEmail: clientNotificationEmailValue, // Email per notifiche
                     palletCount: parseInt(palletCountValue),
                     palletDesc: document.getElementById('pallet-desc').value,
                     packages: packages,
@@ -396,7 +398,7 @@
             card.innerHTML = `
                 <div class="flex flex-col md:flex-row justify-between">
                     <div>
-                        <p class="font-bold text-lg flex items-center">${pickup.clientName} / ${pickup.clientEmail} ${isRescheduleRequest ? '<span class="ml-3 text-sm font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">DA RIPROGRAMMARE</span>' : ''}</p>
+                        <p class="font-bold text-lg flex items-center">${pickup.clientName} / ${pickup.clientStand} ${isRescheduleRequest ? '<span class="ml-3 text-sm font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">DA RIPROGRAMMARE</span>' : ''}</p>
                         <p class="text-sm text-gray-600">${pickup.palletCount} colli - Codice: <span class="font-semibold">${pickup.uniqueCode}</span></p>
                         ${clientProposalHTML}
                         <p class="text-sm text-gray-500 italic mt-1">${pickup.clientNotes || ''}</p>
@@ -408,6 +410,7 @@
                 </div>
                 <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
                     <div class="md:col-span-2"><i class="fas fa-box-open fa-fw text-gray-400 mr-2"></i><strong>Dettagli Colli:</strong><br><div class="pl-6">${packagesText}</div></div>
+                    <div class="md:col-span-2 mt-1"><i class="fas fa-at fa-fw text-gray-400 mr-2"></i><strong>Email Notifiche:</strong> ${pickup.clientNotificationEmail || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-map-marker-alt fa-fw text-gray-400 mr-2"></i><strong>Indirizzo:</strong> ${pickup.pickupAddress || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-user-tag fa-fw text-gray-400 mr-2"></i><strong>Referente:</strong> ${pickup.pickupContactName || 'N/D'} (${pickup.pickupContactPhone || 'N/D'})</div>
                 </div>
@@ -498,7 +501,7 @@
                 <div class="mb-4 pb-4 border-b">
                     <h4 class="text-lg font-semibold mb-2 text-gray-800">Dati Materiale</h4>
                     <p class="text-sm"><span class="font-medium text-gray-600">Fiera:</span> ${data.clientName || 'N/D'}</p>
-                    <p class="text-sm"><span class="font-medium text-gray-600">Stand:</span> ${data.clientEmail || 'N/D'}</p>
+                    <p class="text-sm"><span class="font-medium text-gray-600">Stand:</span> ${data.clientStand || 'N/D'}</p>
                     <p class="text-sm"><span class="font-medium text-gray-600">N° Colli:</span> ${data.palletCount || 'N/D'}</p>
                     <p class="text-sm"><span class="font-medium text-gray-600">Descrizione:</span> ${data.palletDesc || 'N/A'}</p>
                     <div class="mt-2">${packagesText}</div>
