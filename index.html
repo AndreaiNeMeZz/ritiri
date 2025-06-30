@@ -139,22 +139,53 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
-    <!-- Local App Logic (No Firebase) -->
-    <script>
+    <!-- Firebase SDK and Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
         // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBAQpJSlTaovAbtu3BJ7lk1uXPw-Wf8jUc",
+            authDomain: "gestione-ritiri-logistica.firebaseapp.com",
+            projectId: "gestione-ritiri-logistica",
+            storageBucket: "gestione-ritiri-logistica.firebasestorage.app",
+            messagingSenderId: "314583451999",
+            appId: "1:314583451999:web:0aeeff71f3b6faa208ceea"
+        };
+        
         const WAREHOUSES = {
             '1q': 'Magazzino Principale',
             '2w': 'Deposito Secondario',
             '3e': 'Logistica Esterna'
         };
 
-        // --- LOCAL DATA STORE ---
-        let localPickups = [];
+        // --- FIREBASE INITIALIZATION ---
+        let db, auth, pickupsCollection;
+        let app;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            // Non usiamo più un percorso fisso, verrà determinato dopo il login del magazzino.
+        } catch (error) {
+            console.error("Errore di configurazione Firebase:", error);
+            showToast("Configurazione Firebase mancante o errata.", true);
+        }
 
         // --- STATE MANAGEMENT ---
         let currentView = 'role-selection-view';
         let currentPickupId = null;
         let currentWarehouseId = null; 
+        let adminUnsubscribe, clientUnsubscribe;
+
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e));
+            }
+        });
 
         // --- UI & VIEW MANAGEMENT ---
         window.showView = (viewId) => {
@@ -171,6 +202,8 @@
         };
 
         window.logout = () => {
+            if (adminUnsubscribe) adminUnsubscribe();
+            if (clientUnsubscribe) clientUnsubscribe();
             currentPickupId = null;
             currentWarehouseId = null;
             document.getElementById('client-code').value = '';
@@ -178,7 +211,6 @@
             showView('role-selection-view');
         }
 
-        // --- MODAL LOGIC ---
         const showModal = (title, content, onConfirm, confirmText = 'Conferma') => {
             const modalContainer = document.getElementById('modal-container');
             modalContainer.innerHTML = `
@@ -203,8 +235,9 @@
             if (WAREHOUSES[password]) {
                 currentWarehouseId = password;
                 document.getElementById('warehouse-name').innerText = WAREHOUSES[password];
+                pickupsCollection = collection(db, 'warehouses', currentWarehouseId, 'pickups');
                 showView('admin-dashboard-view');
-                refreshAdminView();
+                listenForPickupsAdmin();
             } else { 
                 showToast("Password magazzino non valida.", true); 
             }
@@ -214,7 +247,7 @@
         palletCountInput.addEventListener('input', () => {
             const count = parseInt(palletCountInput.value) || 0;
             const container = document.getElementById('packages-container');
-            container.innerHTML = ''; // Clear previous fields
+            container.innerHTML = '';
 
             if (count > 0 && count < 20) {
                 for (let i = 1; i <= count; i++) {
@@ -245,8 +278,7 @@
             }
         });
 
-
-        document.getElementById('add-pickup-form').addEventListener('submit', (e) => {
+        document.getElementById('add-pickup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const palletCountValue = document.getElementById('pallet-count').value;
@@ -255,12 +287,10 @@
             const pickupAddressValue = document.getElementById('pickup-address').value;
 
             if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientEmailValue.trim()) {
-                showToast("Fiera, Stand e Indirizzo sono obbligatori.", true);
-                return;
+                showToast("Fiera, Stand e Indirizzo sono obbligatori.", true); return;
             }
             if (!palletCountValue || isNaN(parseInt(palletCountValue)) || parseInt(palletCountValue) < 1) {
-                showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true);
-                return;
+                showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true); return;
             }
             
             const packages = [];
@@ -281,48 +311,51 @@
             ].filter(Boolean).map(d => new Date(d));
             
             const initialStatus = initialDates.length > 0 ? 'Date Proposte' : 'Da Ritirare';
-
             const uniqueCode = `RIT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-            const newPickup = {
-                id: crypto.randomUUID(),
-                warehouseId: currentWarehouseId,
-                clientName: clientNameValue,
-                clientEmail: clientEmailValue,
-                palletCount: parseInt(palletCountValue),
-                palletDesc: document.getElementById('pallet-desc').value,
-                packages: packages,
-                pickupAddress: pickupAddressValue,
-                pickupContactName: document.getElementById('pickup-contact-name').value,
-                pickupContactPhone: document.getElementById('pickup-contact-phone').value,
-                uniqueCode,
-                status: initialStatus,
-                pickupDateTime: null,
-                clientProposedDate: null, 
-                proposedDates: initialDates,
-                clientNotes: '',
-                createdAt: new Date(),
-            };
-            
-            localPickups.push(newPickup);
-            showToast(`Ritiro aggiunto! Codice: ${uniqueCode}`);
-            e.target.reset();
-            document.getElementById('packages-container').innerHTML = '';
-            refreshAdminView();
+
+            try {
+                await addDoc(pickupsCollection, {
+                    warehouseId: currentWarehouseId,
+                    clientName: clientNameValue,
+                    clientEmail: clientEmailValue,
+                    palletCount: parseInt(palletCountValue),
+                    palletDesc: document.getElementById('pallet-desc').value,
+                    packages: packages,
+                    pickupAddress: pickupAddressValue,
+                    pickupContactName: document.getElementById('pickup-contact-name').value,
+                    pickupContactPhone: document.getElementById('pickup-contact-phone').value,
+                    uniqueCode,
+                    status: initialStatus,
+                    pickupDateTime: null,
+                    clientProposedDate: null, 
+                    proposedDates: initialDates,
+                    clientNotes: '',
+                    createdAt: new Date(),
+                });
+                showToast(`Ritiro aggiunto! Codice: ${uniqueCode}`);
+                e.target.reset();
+                document.getElementById('packages-container').innerHTML = '';
+            } catch(error) {
+                console.error("Errore aggiunta Firestore:", error);
+                showToast("Errore durante l'aggiunta.", true);
+            }
         });
 
-        function refreshAdminView() {
-            const pickupsList = document.getElementById('pickups-list');
-            pickupsList.innerHTML = '';
-            
-            const pickupsForWarehouse = localPickups.filter(p => p.warehouseId === currentWarehouseId);
+        function listenForPickupsAdmin() {
+            if (adminUnsubscribe) adminUnsubscribe();
+            adminUnsubscribe = onSnapshot(query(pickupsCollection), (snapshot) => {
+                const pickupsList = document.getElementById('pickups-list');
+                pickupsList.innerHTML = '';
+                const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            if (pickupsForWarehouse.length === 0) {
-                pickupsList.innerHTML = '<p class="text-gray-500">Nessun ritiro presente per questo magazzino.</p>';
-                return;
-            }
-            const statusOrder = { 'Richiesta Inviata': 1, 'Date Proposte': 2, 'Programmato': 3, 'Da Ritirare': 4, 'Completato': 5 };
-            pickupsForWarehouse.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
-            pickupsForWarehouse.forEach(p => pickupsList.appendChild(createAdminPickupCard(p)));
+                if (docs.length === 0) {
+                    pickupsList.innerHTML = '<p class="text-gray-500">Nessun ritiro presente per questo magazzino.</p>';
+                    return;
+                }
+                const statusOrder = { 'Richiesta Inviata': 1, 'Date Proposte': 2, 'Programmato': 3, 'Da Ritirare': 4, 'Completato': 5 };
+                docs.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+                docs.forEach(p => pickupsList.appendChild(createAdminPickupCard(p)));
+            });
         }
 
         const STATUS_CONFIG = {
@@ -336,12 +369,12 @@
         function createAdminPickupCard(pickup) {
             const card = document.createElement('div');
             const config = STATUS_CONFIG[pickup.status] || STATUS_CONFIG['Da Ritirare'];
-            const pickupDate = pickup.pickupDateTime ? new Date(pickup.pickupDateTime).toLocaleString('it-IT') : 'Da definire';
+            const pickupDate = pickup.pickupDateTime ? new Date(pickup.pickupDateTime.seconds * 1000).toLocaleString('it-IT') : 'Da definire';
             const isRescheduleRequest = pickup.status === 'Richiesta Inviata' && pickup.clientNotes && pickup.clientNotes.startsWith('RICHIESTA DI RIPROGRAMMAZIONE');
 
             let clientProposalHTML = '';
             if (pickup.status === 'Richiesta Inviata' && pickup.clientProposedDate) {
-                const proposedDate = new Date(pickup.clientProposedDate).toLocaleString('it-IT');
+                const proposedDate = new Date(pickup.clientProposedDate.seconds * 1000).toLocaleString('it-IT');
                 clientProposalHTML = `<div class="mt-2 p-2 bg-orange-50 rounded-lg"><p class="font-semibold text-orange-700">Proposta cliente: ${proposedDate}</p></div>`;
             }
             
@@ -383,61 +416,73 @@
             return card;
         }
         
-        window.confirmClientDate = (pickupId) => {
-            const pickup = localPickups.find(p => p.id === pickupId);
-            if (pickup && pickup.clientProposedDate) {
-                pickup.pickupDateTime = pickup.clientProposedDate;
-                pickup.status = 'Programmato';
-                pickup.clientProposedDate = null;
-                pickup.proposedDates = [];
-                showToast("Data del cliente confermata!");
-                refreshAdminView();
-            } else {
-                showToast("Nessuna data proposta dal cliente da confermare.", true);
-            }
+        window.confirmClientDate = async (pickupId) => {
+            const docRef = doc(pickupsCollection, pickupId);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().clientProposedDate) {
+                    await updateDoc(docRef, {
+                        pickupDateTime: docSnap.data().clientProposedDate,
+                        status: 'Programmato',
+                        clientProposedDate: null, 
+                        proposedDates: []
+                    });
+                    showToast("Data del cliente confermata!");
+                } else { showToast("Nessuna data proposta dal cliente.", true); }
+            } catch (e) { console.error(e); showToast("Errore durante la conferma.", true); }
         };
 
         window.proposeDates = (pickupId) => {
-            const content = `<p class="text-sm mb-4">Inserisci fino a 3 date e orari da proporre al cliente.</p>
+            const content = `<p class="text-sm mb-4">Inserisci fino a 3 date.</p>
                 <input type="datetime-local" id="date1" class="w-full p-2 border rounded mb-2"><input type="datetime-local" id="date2" class="w-full p-2 border rounded mb-2"><input type="datetime-local" id="date3" class="w-full p-2 border rounded">`;
-            showModal('Proponi Date Alternative', content, () => {
+            showModal('Proponi Date Alternative', content, async () => {
                 const dates = [document.getElementById('date1').value, document.getElementById('date2').value, document.getElementById('date3').value].filter(Boolean).map(d => new Date(d));
                 if (dates.length === 0) { showToast('Inserisci almeno una data.', true); return; }
                 
-                const pickup = localPickups.find(p => p.id === pickupId);
-                if (pickup) {
-                    pickup.proposedDates = dates;
-                    pickup.status = 'Date Proposte';
-                    pickup.clientProposedDate = null;
-                    showToast('Controproposta inviata con successo!');
+                try {
+                    await updateDoc(doc(pickupsCollection, pickupId), { proposedDates: dates, status: 'Date Proposte', clientProposedDate: null });
+                    showToast('Controproposta inviata!');
                     hideModal();
-                    refreshAdminView();
-                }
+                } catch(e) { console.error(e); showToast('Errore nel salvataggio.', true); }
             }, 'Invia Proposte');
         };
 
-        window.markAsCompleted = (pickupId) => {
-            showModal('Conferma Completamento', '<p>Sei sicuro di voler segnare questo ritiro come completato?</p>', () => {
-                 const pickup = localPickups.find(p => p.id === pickupId);
-                 if (pickup) {
-                    pickup.status = 'Completato';
+        window.markAsCompleted = async (pickupId) => {
+            showModal('Conferma Completamento', '<p>Sei sicuro di voler segnare questo ritiro come completato?</p>', async () => {
+                try {
+                    await updateDoc(doc(pickupsCollection, pickupId), { status: 'Completato' });
                     showToast('Ritiro completato!');
                     hideModal();
-                    refreshAdminView();
-                 }
+                } catch(e) { console.error(e); showToast("Errore durante l'aggiornamento.", true); }
             });
         }
 
         // --- CLIENT LOGIC ---
-        window.loginClient = () => {
+        window.loginClient = async () => {
             const code = document.getElementById('client-code').value.trim().toUpperCase();
             if (!code) return showToast("Inserisci un codice.", true);
             
-            const pickup = localPickups.find(p => p.uniqueCode === code);
-            if (!pickup) return showToast("Codice non valido.", true);
+            let foundPickup = null;
+            for (const whId in WAREHOUSES) {
+                const q = query(collection(db, 'warehouses', whId, 'pickups'), where("uniqueCode", "==", code));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    foundPickup = snapshot.docs[0];
+                    break;
+                }
+            }
+            
+            if (!foundPickup) return showToast("Codice non valido.", true);
+            
+            pickupsCollection = collection(db, 'warehouses', foundPickup.data().warehouseId, 'pickups');
+            currentPickupId = foundPickup.id;
 
-            currentPickupId = pickup.id;
-            renderClientView(pickup);
+            if (clientUnsubscribe) clientUnsubscribe();
+            clientUnsubscribe = onSnapshot(doc(pickupsCollection, currentPickupId), (doc) => {
+                if(doc.exists()) {
+                    renderClientView(doc.data());
+                } else { logout(); }
+            });
             showView('client-view');
         };
 
@@ -448,7 +493,6 @@
             const packagesText = Array.isArray(data.packages) && data.packages.length > 0 
                 ? data.packages.map((pkg, i) => `<p class="text-sm"><span class="font-medium text-gray-600">Collo ${i+1}:</span> ${pkg.dimension || 'N/D'} - ${pkg.weight || 'N/D'}</p>`).join('')
                 : `N/D`;
-
 
             const baseDetails = `
                 <div class="mb-4 pb-4 border-b">
@@ -476,23 +520,22 @@
                     break;
                 case 'Richiesta Inviata':
                     title.innerText = 'Proposta Inviata';
-                    container.innerHTML = `${baseDetails}<div class="p-4 bg-orange-100 text-orange-800 rounded-lg text-center"><i class="fas fa-clock fa-2x mb-2"></i><p class="font-bold">Proposta inviata con successo!</p><p class="text-sm">Attendi la conferma o una controproposta dal coordinatore.</p></div>`;
+                    container.innerHTML = `${baseDetails}<div class="p-4 bg-orange-100 text-orange-800 rounded-lg text-center"><i class="fas fa-clock fa-2x mb-2"></i><p class="font-bold">Proposta inviata con successo!</p><p class="text-sm">Attendi la conferma o una controproposta.</p></div>`;
                     break;
                 case 'Date Proposte':
                     title.innerText = 'Proposta di Ritiro Ricevuta';
-                    let proposalsHTML = data.proposedDates.map(d => { const date = new Date(d); return `<label class="block border rounded-lg p-3 mb-2 hover:bg-gray-50 cursor-pointer"><input type="radio" name="date-proposal" value="${date.toISOString()}" class="mr-3"><span class="font-semibold">${date.toLocaleDateString('it-IT', {weekday: 'long', day: 'numeric', month: 'long'})}</span> alle <span class="font-semibold">${date.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}</span></label>`; }).join('');
+                    let proposalsHTML = data.proposedDates.map(d => { const date = new Date(d.seconds * 1000); return `<label class="block border rounded-lg p-3 mb-2 hover:bg-gray-50 cursor-pointer"><input type="radio" name="date-proposal" value="${date.toISOString()}" class="mr-3"><span class="font-semibold">${date.toLocaleDateString('it-IT', {weekday: 'long', day: 'numeric', month: 'long'})}</span> alle <span class="font-semibold">${date.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}</span></label>`; }).join('');
                     container.innerHTML = `${baseDetails}
-                        <p class="mb-4 font-semibold text-gray-800">Il coordinatore ha proposto le seguenti date per il ritiro. Scegli quella che preferisci:</p>
+                        <p class="mb-4 font-semibold text-gray-800">Il coordinatore ha proposto le seguenti date. Scegli quella che preferisci:</p>
                         <div class="mb-4">${proposalsHTML}</div>
                         <button onclick="window.confirmSlot()" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition">Conferma la data selezionata</button>
-                        <button onclick="window.rejectAndRepropose()" class="w-full bg-gray-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-600 transition mt-2">Nessuna di queste date va bene, propongo un'altra data</button>`;
+                        <button onclick="window.rejectAndRepropose()" class="w-full bg-gray-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-600 transition mt-2">Nessuna di queste date va bene</button>`;
                     break;
                 case 'Programmato':
                 case 'Completato':
                     title.innerText = `Ritiro ${data.status}`;
-                    const pickupDate = new Date(data.pickupDateTime);
+                    const pickupDate = new Date(data.pickupDateTime.seconds * 1000);
                     let actionsHTML = data.status !== 'Completato' ? `<div class="mt-6 pt-6 border-t"><h4 class="font-semibold mb-2">Imprevisti?</h4><button onclick="window.requestReschedule()" class="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">Richiedi Modifica Ritiro</button></div>` : '';
-
                     container.innerHTML = `${baseDetails}
                         <div class="p-4 ${data.status === 'Completato' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'} rounded-lg text-center"><i class="fas ${data.status === 'Completato' ? 'fa-check-circle' : 'fa-calendar-check'} fa-2x mb-2"></i><p class="font-bold">Ritiro ${data.status === 'Completato' ? 'Effettuato' : 'Confermato'}</p><p>Il <strong>${pickupDate.toLocaleDateString('it-IT')}</strong> alle <strong>${pickupDate.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}</strong></p></div>
                         ${actionsHTML}`;
@@ -500,52 +543,49 @@
             }
         }
         
-        window.requestPickup = () => {
+        window.requestPickup = async () => {
             const proposedDateValue = document.getElementById('client-proposed-date').value;
             if (!proposedDateValue) { return showToast("Per favore, proponi una data e un'ora.", true); }
-            
-            const pickup = localPickups.find(p => p.id === currentPickupId);
-            if(pickup) {
-                pickup.status = 'Richiesta Inviata';
-                pickup.clientNotes = document.getElementById('client-notes').value;
-                pickup.clientProposedDate = new Date(proposedDateValue);
+            try {
+                await updateDoc(doc(pickupsCollection, currentPickupId), { 
+                    status: 'Richiesta Inviata', 
+                    clientNotes: document.getElementById('client-notes').value,
+                    clientProposedDate: new Date(proposedDateValue)
+                });
                 showToast('Proposta di ritiro inviata!');
-                renderClientView(pickup);
-            }
+            } catch (e) { console.error(e); showToast('Errore. Riprova.', true); }
         };
 
-        window.confirmSlot = () => {
+        window.confirmSlot = async () => {
             const selectedDateValue = document.querySelector('input[name="date-proposal"]:checked');
             if (!selectedDateValue) return showToast('Per favore, seleziona una data.', true);
-            
-            const pickup = localPickups.find(p => p.id === currentPickupId);
-            if(pickup) {
-                pickup.status = 'Programmato'; 
-                pickup.pickupDateTime = new Date(selectedDateValue.value);
-                pickup.proposedDates = []; 
-                pickup.clientProposedDate = null;
+            try {
+                await updateDoc(doc(pickupsCollection, currentPickupId), { 
+                    status: 'Programmato', 
+                    pickupDateTime: new Date(selectedDateValue.value),
+                    proposedDates: [], 
+                    clientProposedDate: null
+                });
                 showToast('Appuntamento confermato!');
-                renderClientView(pickup);
-            }
+            } catch (e) { console.error(e); showToast('Errore. Riprova.', true); }
         };
         
         window.requestReschedule = () => {
-            const content = `<p>Vuoi richiedere una modifica per questo ritiro? L'appuntamento attuale verrà annullato e potrai proporre una nuova data.</p><textarea id="reschedule-reason" class="w-full p-2 border rounded mt-4" placeholder="Motivo della richiesta (opzionale)"></textarea>`;
-            showModal('Richiedi Modifica Ritiro', content, () => {
+            const content = `<p>Vuoi richiedere una modifica? L'appuntamento verrà annullato e potrai proporre una nuova data.</p><textarea id="reschedule-reason" class="w-full p-2 border rounded mt-4" placeholder="Motivo (opzionale)"></textarea>`;
+            showModal('Richiedi Modifica Ritiro', content, async () => {
                 const reason = document.getElementById('reschedule-reason').value;
                 const note = `RICHIESTA DI RIPROGRAMMAZIONE. ${reason ? 'Motivo: ' + reason : ''}`;
-                
-                const pickup = localPickups.find(p => p.id === currentPickupId);
-                if(pickup){
-                    pickup.status = 'Da Ritirare'; 
-                    pickup.pickupDateTime = null; 
-                    pickup.proposedDates = []; 
-                    pickup.clientProposedDate = null;
-                    pickup.clientNotes = note; 
-                    showToast('Richiesta di modifica inviata. Ora puoi proporre una nuova data.');
+                try {
+                    await updateDoc(doc(pickupsCollection, currentPickupId), { 
+                        status: 'Da Ritirare', 
+                        pickupDateTime: null, 
+                        proposedDates: [], 
+                        clientProposedDate: null,
+                        clientNotes: note 
+                    });
+                    showToast('Richiesta inviata. Proponi una nuova data.');
                     hideModal();
-                    renderClientView(pickup);
-                }
+                } catch(e) { console.error(e); showToast('Errore. Riprova.', true); }
             }, 'Conferma Richiesta');
         };
 
@@ -553,25 +593,22 @@
             const content = `
                 <p class="mb-2">Proponi una nuova data e ora per il ritiro:</p>
                 <input type="datetime-local" id="client-reproposed-date" class="w-full p-2 border rounded mb-2">
-                <textarea id="reproposal-notes" class="w-full p-2 border rounded" placeholder="Aggiungi eventuali note (opzionale)"></textarea>
+                <textarea id="reproposal-notes" class="w-full p-2 border rounded" placeholder="Note (opzionale)"></textarea>
             `;
-            showModal('Proponi una Nuova Data', content, () => {
+            showModal('Proponi una Nuova Data', content, async () => {
                 const newProposedDate = document.getElementById('client-reproposed-date').value;
-                if (!newProposedDate) {
-                    return showToast("Per favore, inserisci una nuova data.", true);
-                }
+                if (!newProposedDate) { return showToast("Inserisci una nuova data.", true); }
                 
-                const pickup = localPickups.find(p => p.id === currentPickupId);
-                if (pickup) {
-                    pickup.status = 'Richiesta Inviata';
-                    pickup.clientNotes = 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value;
-                    pickup.clientProposedDate = new Date(newProposedDate);
-                    pickup.proposedDates = []; 
-                    
+                try {
+                    await updateDoc(doc(pickupsCollection, currentPickupId), {
+                        status: 'Richiesta Inviata',
+                        clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
+                        clientProposedDate: new Date(newProposedDate),
+                        proposedDates: [],
+                    });
                     showToast('Nuova proposta inviata!');
                     hideModal();
-                    renderClientView(pickup);
-                }
+                } catch(e) { console.error(e); showToast("Errore. Riprova.", true); }
             }, 'Invia Nuova Proposta');
         };
     </script>
