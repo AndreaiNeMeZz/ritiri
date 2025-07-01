@@ -3,26 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Ritiri Bancali</title>
+    <title>Gestione Ritiri Emotiva</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        /* Custom Styles for Emotiva Brand */
+        :root {
+            --emotiva-purple: #9c6da5;
+            --emotiva-purple-dark: #8a5f93;
+            --emotiva-purple-light: #f4eff6;
+            --emotiva-green: #5cb85c;
+            --emotiva-green-dark: #4a934a;
+            --emotiva-text: #333;
+            --emotiva-gray: #f7f7f7;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--emotiva-gray);
+            background-image: linear-gradient(175deg, #ffffff 50%, #f4eff6 100%);
+        }
+
+        .btn-primary {
+            background-color: var(--emotiva-purple);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(156, 109, 165, 0.39);
+        }
+        .btn-primary:hover {
+            background-color: var(--emotiva-purple-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(156, 109, 165, 0.5);
+        }
+        
+        .btn-secondary {
+            background-color: var(--emotiva-green);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(92, 184, 92, 0.39);
+        }
+        .btn-secondary:hover {
+            background-color: var(--emotiva-green-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(92, 184, 92, 0.5);
+        }
+        
         .view { display: none; }
-        .view.active { display: block; }
+        .view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .toast {
             visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333;
             color: #fff; text-align: center; border-radius: 8px; padding: 16px;
             position: fixed; z-index: 100; left: 50%; bottom: 30px; opacity: 0;
-            transition: visibility 0s, opacity 0.5s linear;
+            transition: all 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .toast.show { visibility: visible; opacity: 1; }
+        .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        
         .modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.5); z-index: 50;
@@ -31,17 +79,27 @@
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 60;
         }
+        
+        input:focus, textarea:focus {
+            border-color: var(--emotiva-purple) !important;
+            box-shadow: 0 0 0 2px var(--emotiva-purple-light) !important;
+        }
+
+        .tab-button.active {
+            border-color: var(--emotiva-purple);
+            color: var(--emotiva-purple);
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased">
+<body class="text-emotiva-text antialiased">
 
     <!-- Main Container -->
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
 
         <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Gestione Ritiri Post-Fiera</h1>
-            <p class="text-gray-600 mt-2">Piattaforma di coordinamento ritiri.</p>
+        <header class="text-center mb-12">
+            <img src="logo-01 copia.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Piattaforma Ritiri</h1>
         </header>
 
         <!-- Dynamic Views Container -->
@@ -49,12 +107,12 @@
 
             <!-- Role Selection View -->
             <div id="role-selection-view" class="view active text-center bg-white p-8 rounded-xl shadow-lg">
-                <h2 class="text-2xl font-semibold mb-6">Chi sei?</h2>
+                <h2 class="text-2xl font-semibold mb-6">Seleziona il tuo ruolo</h2>
                 <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <button onclick="showView('admin-login-view')" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md">
+                    <button onclick="showView('admin-login-view')" class="btn-primary font-bold py-3 px-6 rounded-lg">
                         <i class="fas fa-user-shield mr-2"></i> Coordinatore / Magazzino
                     </button>
-                    <button onclick="showView('client-login-view')" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 shadow-md">
+                    <button onclick="showView('client-login-view')" class="btn-secondary font-bold py-3 px-6 rounded-lg">
                         <i class="fas fa-user mr-2"></i> Cliente
                     </button>
                 </div>
@@ -62,19 +120,19 @@
 
             <!-- Admin Login View -->
             <div id="admin-login-view" class="view bg-white p-8 rounded-xl shadow-lg">
-                <button onclick="showView('role-selection-view')" class="text-blue-500 hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
+                <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center">Accesso Area Riservata</h2>
-                <input type="password" id="admin-password" placeholder="Inserisci password magazzino" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500">
-                <button onclick="loginAdmin()" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Accedi</button>
+                <input type="password" id="admin-password" placeholder="Inserisci password magazzino" class="w-full p-3 border border-gray-300 rounded-lg mb-4 transition">
+                <button onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
             </div>
 
             <!-- Client Login View -->
             <div id="client-login-view" class="view bg-white p-8 rounded-xl shadow-lg">
-                <button onclick="showView('role-selection-view')" class="text-blue-500 hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
+                <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center">Accesso Cliente</h2>
                 <p class="text-center text-gray-600 mb-4">Inserisci il codice univoco per gestire il tuo ritiro.</p>
-                <input type="text" id="client-code" placeholder="Il tuo codice di ritiro" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500">
-                <button onclick="loginClient()" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition">Verifica Codice</button>
+                <input type="text" id="client-code" placeholder="Il tuo codice di ritiro" class="w-full p-3 border border-gray-300 rounded-lg mb-4 transition">
+                <button onclick="loginClient()" class="w-full btn-secondary font-bold py-3 px-6 rounded-lg">Verifica Codice</button>
             </div>
 
             <!-- Admin Dashboard View -->
@@ -82,7 +140,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 class="text-2xl font-semibold">Pannello di Controllo</h2>
-                        <p id="warehouse-name" class="text-lg text-gray-600"></p>
+                        <p id="warehouse-name" class="text-lg" style="color: var(--emotiva-purple);"></p>
                     </div>
                     <button onclick="logout()" class="text-red-500 hover:underline">Esci</button>
                 </div>
@@ -91,34 +149,49 @@
                     <h3 class="text-xl font-semibold mb-4">Aggiungi Materiale Cliente</h3>
                     <form id="add-pickup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 border-b pb-2">Cliente</h4>
-                        <input type="text" id="client-name" placeholder="Fiera" class="p-3 border rounded-lg" required>
-                        <input type="text" id="client-stand" placeholder="Stand" class="p-3 border rounded-lg" required>
-                        <input type="email" id="client-notification-email" placeholder="Email Notifiche Cliente" class="p-3 border rounded-lg md:col-span-2" required>
+                        <input type="text" id="client-name" placeholder="Fiera" class="p-3 border rounded-lg transition" required>
+                        <input type="text" id="client-stand" placeholder="Cliente/Stand" class="p-3 border rounded-lg transition" required>
                         
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 mt-4 border-b pb-2">Dati Spedizione</h4>
-                        <input type="number" id="pallet-count" placeholder="Numero Bancali/Colli" class="p-3 border rounded-lg" required min="1">
+                        <input type="number" id="pallet-count" placeholder="Numero Bancali/Colli" class="p-3 border rounded-lg transition" required min="1">
                         
                         <div id="packages-container" class="md:col-span-2 grid grid-cols-1 gap-y-4"></div>
 
-                        <textarea id="pallet-desc" placeholder="Descrizione contenuto" class="p-3 border rounded-lg md:col-span-2" rows="2"></textarea>
+                        <textarea id="pallet-desc" placeholder="Descrizione contenuto" class="p-3 border rounded-lg md:col-span-2 transition" rows="2"></textarea>
                         
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 mt-4 border-b pb-2">Dati per il Corriere</h4>
-                        <textarea id="pickup-address" placeholder="Indirizzo di ritiro completo" class="p-3 border rounded-lg md:col-span-2" rows="3" required></textarea>
-                        <input type="text" id="pickup-contact-name" placeholder="Nome referente magazzino" class="p-3 border rounded-lg">
-                        <input type="tel" id="pickup-contact-phone" placeholder="Telefono referente" class="p-3 border rounded-lg">
+                        <textarea id="pickup-address" placeholder="Indirizzo di ritiro completo" class="p-3 border rounded-lg md:col-span-2 transition" rows="3" required></textarea>
+                        <input type="text" id="pickup-contact-name" placeholder="Nome referente magazzino" class="p-3 border rounded-lg transition">
+                        <input type="tel" id="pickup-contact-phone" placeholder="Telefono referente" class="p-3 border rounded-lg transition">
                         
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 mt-4 border-b pb-2">Proponi Date di Ritiro (Opzionale)</h4>
-                        <input type="datetime-local" id="initial-date-1" class="p-3 border rounded-lg">
-                        <input type="datetime-local" id="initial-date-2" class="p-3 border rounded-lg">
-                        <input type="datetime-local" id="initial-date-3" class="p-3 border rounded-lg md:col-span-2">
+                        <input type="datetime-local" id="initial-date-1" class="p-3 border rounded-lg transition">
+                        <input type="datetime-local" id="initial-date-2" class="p-3 border rounded-lg transition">
+                        <input type="datetime-local" id="initial-date-3" class="p-3 border rounded-lg md:col-span-2 transition">
 
-                        <button type="submit" class="md:col-span-2 w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition mt-4">Aggiungi e Genera Codice</button>
+                        <button type="submit" class="md:col-span-2 w-full btn-primary font-bold py-3 px-6 rounded-lg mt-4">Aggiungi e Genera Codice</button>
                     </form>
                 </div>
-                <!-- Pickups List -->
+                <!-- Pickups List with Tabs -->
                 <div>
-                    <h3 class="text-xl font-semibold mb-4">Elenco Ritiri</h3>
-                    <div id="pickups-list" class="space-y-4"></div>
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button id="tab-ongoing" onclick="showTab('ongoing')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active">
+                                In corso
+                            </button>
+                            <button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                Completati
+                            </button>
+                        </nav>
+                    </div>
+            
+                    <!-- Tab Content -->
+                    <div id="tab-content-ongoing" class="tab-content active">
+                        <div id="pickups-list-ongoing" class="space-y-4 mt-6"></div>
+                    </div>
+                    <div id="tab-content-completed" class="tab-content" style="display: none;">
+                         <div id="pickups-list-completed" class="space-y-4 mt-6"></div>
+                    </div>
                 </div>
             </div>
 
@@ -143,7 +216,7 @@
     <!-- Firebase SDK and Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // --- CONFIGURATION ---
@@ -211,7 +284,7 @@
             showView('role-selection-view');
         }
 
-        const showModal = (title, content, onConfirm, confirmText = 'Conferma') => {
+        const showModal = (title, content, onConfirm, confirmText = 'Conferma', confirmClass = 'btn-primary') => {
             const modalContainer = document.getElementById('modal-container');
             modalContainer.innerHTML = `
                 <div class="modal-backdrop"></div>
@@ -220,7 +293,7 @@
                     <div id="modal-content">${content}</div>
                     <div class="flex justify-end gap-3 mt-6">
                         <button id="modal-cancel" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Annulla</button>
-                        <button id="modal-confirm" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">${confirmText}</button>
+                        <button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button>
                     </div>
                 </div>`;
             modalContainer.classList.remove('hidden');
@@ -263,14 +336,14 @@
                     dimensionInput.type = 'text';
                     dimensionInput.id = `dimension-${i}`;
                     dimensionInput.placeholder = `Dimensioni (es. 120x80x100 cm)`;
-                    dimensionInput.className = 'p-3 border rounded-lg';
+                    dimensionInput.className = 'p-3 border rounded-lg transition';
                     packageDiv.appendChild(dimensionInput);
                     
                     const weightInput = document.createElement('input');
                     weightInput.type = 'text';
                     weightInput.id = `weight-${i}`;
                     weightInput.placeholder = `Peso (es. 50kg)`;
-                    weightInput.className = 'p-3 border rounded-lg';
+                    weightInput.className = 'p-3 border rounded-lg transition';
                     packageDiv.appendChild(weightInput);
                     
                     container.appendChild(packageDiv);
@@ -284,11 +357,10 @@
             const palletCountValue = document.getElementById('pallet-count').value;
             const clientNameValue = document.getElementById('client-name').value;
             const clientStandValue = document.getElementById('client-stand').value;
-            const clientNotificationEmailValue = document.getElementById('client-notification-email').value;
             const pickupAddressValue = document.getElementById('pickup-address').value;
 
-            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim() || !clientNotificationEmailValue.trim()) {
-                showToast("Tutti i campi cliente e indirizzo sono obbligatori.", true); return;
+            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim()) {
+                showToast("Fiera, Cliente/Stand e Indirizzo sono obbligatori.", true); return;
             }
             if (!palletCountValue || isNaN(parseInt(palletCountValue)) || parseInt(palletCountValue) < 1) {
                 showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true); return;
@@ -319,7 +391,6 @@
                     warehouseId: currentWarehouseId,
                     clientName: clientNameValue, // Fiera
                     clientStand: clientStandValue, // Stand
-                    clientNotificationEmail: clientNotificationEmailValue, // Email per notifiche
                     palletCount: parseInt(palletCountValue),
                     palletDesc: document.getElementById('pallet-desc').value,
                     packages: packages,
@@ -346,17 +417,36 @@
         function listenForPickupsAdmin() {
             if (adminUnsubscribe) adminUnsubscribe();
             adminUnsubscribe = onSnapshot(query(pickupsCollection), (snapshot) => {
-                const pickupsList = document.getElementById('pickups-list');
-                pickupsList.innerHTML = '';
+                const ongoingList = document.getElementById('pickups-list-ongoing');
+                const completedList = document.getElementById('pickups-list-completed');
+                ongoingList.innerHTML = '';
+                completedList.innerHTML = '';
+
                 const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                if (docs.length === 0) {
-                    pickupsList.innerHTML = '<p class="text-gray-500">Nessun ritiro presente per questo magazzino.</p>';
-                    return;
-                }
                 const statusOrder = { 'Richiesta Inviata': 1, 'Date Proposte': 2, 'Programmato': 3, 'Da Ritirare': 4, 'Completato': 5 };
                 docs.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
-                docs.forEach(p => pickupsList.appendChild(createAdminPickupCard(p)));
+
+                let ongoingCount = 0;
+                let completedCount = 0;
+
+                docs.forEach(p => {
+                    const card = createAdminPickupCard(p);
+                    if (p.status === 'Completato') {
+                        completedList.appendChild(card);
+                        completedCount++;
+                    } else {
+                        ongoingList.appendChild(card);
+                        ongoingCount++;
+                    }
+                });
+
+                if (ongoingCount === 0) {
+                    ongoingList.innerHTML = '<p class="text-gray-500 p-4">Nessun ritiro in corso.</p>';
+                }
+                if (completedCount === 0) {
+                    completedList.innerHTML = '<p class="text-gray-500 p-4">Nessun ritiro completato.</p>';
+                }
             });
         }
 
@@ -370,7 +460,9 @@
 
         function createAdminPickupCard(pickup) {
             const card = document.createElement('div');
+            card.className = 'bg-white p-4 rounded-lg shadow-md border-l-4';
             const config = STATUS_CONFIG[pickup.status] || STATUS_CONFIG['Da Ritirare'];
+            card.style.borderColor = `var(--${config.border.split('-')[1]}-500)`;
             const pickupDate = pickup.pickupDateTime ? new Date(pickup.pickupDateTime.seconds * 1000).toLocaleString('it-IT') : 'Da definire';
             const isRescheduleRequest = pickup.status === 'Richiesta Inviata' && pickup.clientNotes && pickup.clientNotes.startsWith('RICHIESTA DI RIPROGRAMMAZIONE');
 
@@ -382,39 +474,48 @@
             
             let actionButtonsHTML = '';
             if (pickup.status === 'Richiesta Inviata') {
-                actionButtonsHTML = `<div class="flex gap-2 justify-end">
+                actionButtonsHTML = `<div class="flex gap-2">
                     <button onclick="window.proposeDates('${pickup.id}')" class="bg-yellow-500 text-white text-sm font-bold py-2 px-3 rounded-lg hover:bg-yellow-600 transition">Controproponi</button>
-                    <button onclick="window.confirmClientDate('${pickup.id}')" class="bg-green-500 text-white text-sm font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition">Conferma Data Cliente</button>
+                    <button onclick="window.confirmClientDate('${pickup.id}')" class="btn-secondary text-sm font-bold py-2 px-3 rounded-lg">Conferma Data Cliente</button>
                 </div>`;
             } else if (pickup.status === 'Programmato') {
-                 actionButtonsHTML = `<button onclick="window.markAsCompleted('${pickup.id}')" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition"><i class="fas fa-check mr-2"></i>Segna Completato</button>`;
+                 actionButtonsHTML = `<button onclick="window.markAsCompleted('${pickup.id}')" class="btn-secondary font-bold py-2 px-4 rounded-lg"><i class="fas fa-check mr-2"></i>Segna Completato</button>`;
             }
             
             const packagesText = Array.isArray(pickup.packages) && pickup.packages.length > 0
                 ? pickup.packages.map((pkg, i) => `Collo ${i+1}: ${pkg.dimension || 'N/D'} - ${pkg.weight || 'N/D'}`).join('<br>')
                 : 'N/D';
+            
+            const footerHTML = `
+                <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                    <div>
+                        ${actionButtonsHTML}
+                    </div>
+                    <button onclick="window.deletePickup('${pickup.id}')" class="text-gray-400 hover:text-red-500 transition-colors duration-300 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center">
+                        <i class="fas fa-trash-alt fa-sm"></i>
+                    </button>
+                </div>
+            `;
 
-            card.className = `bg-white p-4 rounded-lg shadow-md border-l-4 ${config.border}`;
             card.innerHTML = `
                 <div class="flex flex-col md:flex-row justify-between">
-                    <div>
+                    <div class="pr-8">
                         <p class="font-bold text-lg flex items-center">${pickup.clientName} / ${pickup.clientStand} ${isRescheduleRequest ? '<span class="ml-3 text-sm font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">DA RIPROGRAMMARE</span>' : ''}</p>
                         <p class="text-sm text-gray-600">${pickup.palletCount} colli - Codice: <span class="font-semibold">${pickup.uniqueCode}</span></p>
                         ${clientProposalHTML}
                         <p class="text-sm text-gray-500 italic mt-1">${pickup.clientNotes || ''}</p>
                     </div>
-                    <div class="mt-4 md:mt-0 text-left md:text-right">
+                    <div class="mt-4 md:mt-0 text-left md:text-right flex-shrink-0">
                         <p class="font-semibold">Ritiro: <span class="font-normal">${pickupDate}</span></p>
                         <p class="font-semibold mt-1"><span class="px-2 py-1 rounded-full text-xs ${config.color}">${config.text}</span></p>
                     </div>
                 </div>
                 <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
                     <div class="md:col-span-2"><i class="fas fa-box-open fa-fw text-gray-400 mr-2"></i><strong>Dettagli Colli:</strong><br><div class="pl-6">${packagesText}</div></div>
-                    <div class="md:col-span-2 mt-1"><i class="fas fa-at fa-fw text-gray-400 mr-2"></i><strong>Email Notifiche:</strong> ${pickup.clientNotificationEmail || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-map-marker-alt fa-fw text-gray-400 mr-2"></i><strong>Indirizzo:</strong> ${pickup.pickupAddress || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-user-tag fa-fw text-gray-400 mr-2"></i><strong>Referente:</strong> ${pickup.pickupContactName || 'N/D'} (${pickup.pickupContactPhone || 'N/D'})</div>
                 </div>
-                ${actionButtonsHTML ? `<div class="mt-4 pt-4 border-t border-gray-200 text-right">${actionButtonsHTML}</div>` : ''}
+                ${footerHTML}
             `;
             return card;
         }
@@ -457,7 +558,34 @@
                     showToast('Ritiro completato!');
                     hideModal();
                 } catch(e) { console.error(e); showToast("Errore durante l'aggiornamento.", true); }
-            });
+            }, 'Conferma', 'btn-secondary');
+        }
+
+        window.deletePickup = (pickupId) => {
+            showModal(
+                'Conferma Eliminazione',
+                '<p>Sei sicuro di voler eliminare definitivamente questo ritiro? L\'azione non è reversibile.</p>',
+                async () => {
+                    try {
+                        await deleteDoc(doc(pickupsCollection, pickupId));
+                        showToast('Ritiro eliminato con successo!');
+                        hideModal();
+                    } catch (e) {
+                        console.error("Errore durante l'eliminazione:", e);
+                        showToast("Errore durante l'eliminazione.", true);
+                    }
+                },
+                'Elimina',
+                'bg-red-600 text-white hover:bg-red-700'
+            );
+        };
+
+        window.showTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`tab-content-${tabName}`).style.display = 'block';
+            document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
         // --- CLIENT LOGIC ---
@@ -519,7 +647,7 @@
                         <p class="mb-2 font-semibold">Il tuo materiale è pronto. Proponi una data e un'ora per il ritiro:</p>
                         <input type="datetime-local" id="client-proposed-date" class="w-full p-2 border rounded mb-2">
                         <textarea id="client-notes" class="w-full p-2 border rounded mb-4" placeholder="Aggiungi eventuali note (opzionale)">${data.clientNotes || ''}</textarea>
-                        <button onclick="window.requestPickup()" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition">Invia Proposta di Ritiro</button>`;
+                        <button onclick="window.requestPickup()" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg">Invia Proposta di Ritiro</button>`;
                     break;
                 case 'Richiesta Inviata':
                     title.innerText = 'Proposta Inviata';
@@ -531,7 +659,7 @@
                     container.innerHTML = `${baseDetails}
                         <p class="mb-4 font-semibold text-gray-800">Il coordinatore ha proposto le seguenti date. Scegli quella che preferisci:</p>
                         <div class="mb-4">${proposalsHTML}</div>
-                        <button onclick="window.confirmSlot()" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition">Conferma la data selezionata</button>
+                        <button onclick="window.confirmSlot()" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg">Conferma la data selezionata</button>
                         <button onclick="window.rejectAndRepropose()" class="w-full bg-gray-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-600 transition mt-2">Nessuna di queste date va bene</button>`;
                     break;
                 case 'Programmato':
