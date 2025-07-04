@@ -18,8 +18,11 @@
             --emotiva-purple-dark: #8a5f93;
             --emotiva-green: #5cb85c;
             --emotiva-green-dark: #4a934a;
-            --emotiva-text-dark-bg: #333;
-            --emotiva-text-light-bg: #9c6da5;
+            --emotiva-text-dark-bg: #EAEAEA;
+            --emotiva-text-light-bg: #333;
+        }
+        .text-emotiva-purple {
+            color: var(--emotiva-purple);
         }
         body { 
             font-family: 'Poppins', sans-serif; 
@@ -750,7 +753,12 @@
             }, 'Invia Nuova Proposta');
         };
 
-        // Send initial height
+        // Send initial height and set up observer for dynamic changes
+        const observer = new MutationObserver(sendHeight);
+        observer.observe(document.getElementById('app-container'), {
+            childList: true,
+            subtree: true
+        });
         setTimeout(sendHeight, 200);
     </script>
 </body>
