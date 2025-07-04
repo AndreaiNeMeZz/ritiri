@@ -13,7 +13,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* Custom Styles for Emotiva Brand */
         :root {
             --emotiva-purple: #9c6da5;
             --emotiva-purple-dark: #8a5f93;
@@ -21,100 +20,58 @@
             --emotiva-green: #5cb85c;
             --emotiva-green-dark: #4a934a;
             --emotiva-text: #333;
-            --emotiva-gray: #f7f7f7;
         }
-
         body { 
             font-family: 'Poppins', sans-serif; 
-            background-color: var(--emotiva-gray);
-            background-image: linear-gradient(175deg, #ffffff 50%, #f4eff6 100%);
+            background-color: transparent;
         }
-
         .btn-primary {
-            background-color: var(--emotiva-purple);
-            color: white;
-            transition: all 0.3s ease;
+            background-color: var(--emotiva-purple); color: white; transition: all 0.3s ease;
             box-shadow: 0 4px 14px 0 rgba(156, 109, 165, 0.39);
         }
         .btn-primary:hover {
-            background-color: var(--emotiva-purple-dark);
-            transform: translateY(-2px);
+            background-color: var(--emotiva-purple-dark); transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(156, 109, 165, 0.5);
         }
-        
         .btn-secondary {
-            background-color: var(--emotiva-green);
-            color: white;
-            transition: all 0.3s ease;
+            background-color: var(--emotiva-green); color: white; transition: all 0.3s ease;
             box-shadow: 0 4px 14px 0 rgba(92, 184, 92, 0.39);
         }
         .btn-secondary:hover {
-            background-color: var(--emotiva-green-dark);
-            transform: translateY(-2px);
+            background-color: var(--emotiva-green-dark); transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(92, 184, 92, 0.5);
         }
-        
         .view { display: none; }
         .view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .toast {
             visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333;
             color: #fff; text-align: center; border-radius: 8px; padding: 16px;
             position: fixed; z-index: 100; left: 50%; bottom: 30px; opacity: 0;
-            transition: all 0.5s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.5s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        
-        .modal-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5); z-index: 50;
-        }
-        .modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 60;
-        }
-        
-        input:focus, textarea:focus {
-            border-color: var(--emotiva-purple) !important;
-            box-shadow: 0 0 0 2px var(--emotiva-purple-light) !important;
-        }
-
-        .tab-button.active {
-            border-color: var(--emotiva-purple);
-            color: var(--emotiva-purple);
-        }
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 50; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 60; }
+        input:focus, textarea:focus { border-color: var(--emotiva-purple) !important; box-shadow: 0 0 0 2px var(--emotiva-purple-light) !important; }
+        .tab-button.active { border-color: var(--emotiva-purple); color: var(--emotiva-purple); }
     </style>
 </head>
 <body class="text-emotiva-text antialiased">
 
-    <!-- Main Container -->
-    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
-
-        <!-- Header -->
-        <header class="text-center mb-12">
+    <div class="w-full max-w-4xl mx-auto">
+        <header class="text-center mb-8 pt-8">
             <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Piattaforma Ritiri</h1>
         </header>
 
-        <!-- Dynamic Views Container -->
         <main id="app-container">
-
             <!-- Role Selection View -->
             <div id="role-selection-view" class="view active text-center bg-white p-8 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-6">Seleziona il tuo ruolo</h2>
                 <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <button onclick="showView('admin-login-view')" class="btn-primary font-bold py-3 px-6 rounded-lg">
-                        <i class="fas fa-user-shield mr-2"></i> Coordinatore / Magazzino
-                    </button>
-                    <button onclick="showView('client-login-view')" class="btn-secondary font-bold py-3 px-6 rounded-lg">
-                        <i class="fas fa-user mr-2"></i> Cliente
-                    </button>
+                    <button onclick="showView('admin-login-view')" class="btn-primary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user-shield mr-2"></i> Coordinatore / Magazzino</button>
+                    <button onclick="showView('client-login-view')" class="btn-secondary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user mr-2"></i> Cliente</button>
                 </div>
             </div>
 
@@ -122,8 +79,8 @@
             <div id="admin-login-view" class="view bg-white p-8 rounded-xl shadow-lg">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center">Accesso Area Riservata</h2>
-                <input type="password" id="admin-password" placeholder="Inserisci password magazzino" class="w-full p-3 border border-gray-300 rounded-lg mb-4 transition">
-                <button onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
+                <input type="password" id="admin-password" placeholder="Inserisci password" class="w-full p-3 border border-gray-300 rounded-lg mb-4 transition">
+                <button id="admin-login-button" onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
             </div>
 
             <!-- Client Login View -->
@@ -144,20 +101,17 @@
                     </div>
                     <button onclick="logout()" class="text-red-500 hover:underline">Esci</button>
                 </div>
-                <!-- Add New Pickup Form -->
-                <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                
+                <div id="add-pickup-container" class="bg-white p-6 rounded-xl shadow-lg mb-8">
                     <h3 class="text-xl font-semibold mb-4">Aggiungi Materiale Cliente</h3>
                     <form id="add-pickup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 border-b pb-2">Cliente</h4>
                         <input type="text" id="client-name" placeholder="Fiera" class="p-3 border rounded-lg transition" required>
                         <input type="text" id="client-stand" placeholder="Cliente/Stand" class="p-3 border rounded-lg transition" required>
-                        <input type="email" id="client-notification-email" placeholder="Email Notifiche Cliente" class="p-3 border rounded-lg md:col-span-2 transition" required>
                         
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 mt-4 border-b pb-2">Dati Spedizione</h4>
                         <input type="number" id="pallet-count" placeholder="Numero Bancali/Colli" class="p-3 border rounded-lg transition" required min="1">
-                        
                         <div id="packages-container" class="md:col-span-2 grid grid-cols-1 gap-y-4"></div>
-
                         <textarea id="pallet-desc" placeholder="Descrizione contenuto" class="p-3 border rounded-lg md:col-span-2 transition" rows="2"></textarea>
                         
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 mt-4 border-b pb-2">Dati per il Corriere</h4>
@@ -173,26 +127,16 @@
                         <button type="submit" class="md:col-span-2 w-full btn-primary font-bold py-3 px-6 rounded-lg mt-4">Aggiungi e Genera Codice</button>
                     </form>
                 </div>
-                <!-- Pickups List with Tabs -->
+                
                 <div>
                     <div class="border-b border-gray-200">
                         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <button id="tab-ongoing" onclick="showTab('ongoing')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active">
-                                In corso
-                            </button>
-                            <button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                                Completati
-                            </button>
+                            <button id="tab-ongoing" onclick="showTab('ongoing')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active">In corso</button>
+                            <button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Completati</button>
                         </nav>
                     </div>
-            
-                    <!-- Tab Content -->
-                    <div id="tab-content-ongoing" class="tab-content active">
-                        <div id="pickups-list-ongoing" class="space-y-4 mt-6"></div>
-                    </div>
-                    <div id="tab-content-completed" class="tab-content" style="display: none;">
-                         <div id="pickups-list-completed" class="space-y-4 mt-6"></div>
-                    </div>
+                    <div id="tab-content-ongoing" class="tab-content active"><div id="pickups-list-ongoing" class="space-y-4 mt-6"></div></div>
+                    <div id="tab-content-completed" class="tab-content" style="display: none;"><div id="pickups-list-completed" class="space-y-4 mt-6"></div></div>
                 </div>
             </div>
 
@@ -204,64 +148,51 @@
                 </div>
                 <div id="client-content-area" class="bg-white p-6 rounded-xl shadow-lg"></div>
             </div>
-
         </main>
     </div>
 
-    <!-- Modal Container -->
     <div id="modal-container" class="hidden"></div>
-    
-    <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
-    <!-- Firebase SDK and Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
-        // --- CONFIGURATION ---
         const firebaseConfig = {
-  apiKey: "AIzaSyAD3gr0W-dQ8WydozzVZV63uXegxhbYi0Y",
-  authDomain: "logistica-ritiri-app-personale.firebaseapp.com",
-  projectId: "logistica-ritiri-app-personale",
-  storageBucket: "logistica-ritiri-app-personale.firebasestorage.app",
-  messagingSenderId: "1082517021408",
-  appId: "1:1082517021408:web:075f0aee13fdd2a6496685"
-};
-        
-        const WAREHOUSES = {
-            '1q': 'Magazzino Principale',
-            '2w': 'Deposito Secondario',
-            '3e': 'Logistica Esterna'
+            apiKey: "AIzaSyAD3gr0W-dQ8WydozzVZV63uXegxhbYi0Y",
+            authDomain: "logistica-ritiri-app-personale.firebaseapp.com",
+            projectId: "logistica-ritiri-app-personale",
+            storageBucket: "logistica-ritiri-app-personale.firebasestorage.app",
+            messagingSenderId: "1082517021408",
+            appId: "1:1082517021408:web:075f0aee13fdd2a6496685"
         };
-
-        // --- FIREBASE INITIALIZATION ---
-        let db, auth, pickupsCollection;
+        
+        let db, auth, pickupsCollection, functions;
         let app;
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            functions = getFunctions(app, 'europe-west3'); // Assicurati che la regione sia corretta
         } catch (error) {
             console.error("Errore di configurazione Firebase:", error);
             showToast("Configurazione Firebase mancante o errata.", true);
         }
 
-        // --- STATE MANAGEMENT ---
         let currentView = 'role-selection-view';
         let currentPickupId = null;
         let currentWarehouseId = null; 
         let adminUnsubscribe, clientUnsubscribe;
+        let isSuperAdmin = false;
 
-        // --- AUTHENTICATION ---
         onAuthStateChanged(auth, user => {
             if (!user) {
                 signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e));
             }
         });
 
-        // --- UI & VIEW MANAGEMENT ---
         window.showView = (viewId) => {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -275,45 +206,67 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
         };
 
-        window.logout = () => {
+        window.logout = async () => {
             if (adminUnsubscribe) adminUnsubscribe();
             if (clientUnsubscribe) clientUnsubscribe();
             currentPickupId = null;
             currentWarehouseId = null;
+            isSuperAdmin = false;
             document.getElementById('client-code').value = '';
             document.getElementById('admin-password').value = '';
+            
+            await signOut(auth); // Esegui il logout
+            await signInAnonymously(auth); // Rientra come anonimo
+
             showView('role-selection-view');
         }
 
         const showModal = (title, content, onConfirm, confirmText = 'Conferma', confirmClass = 'btn-primary') => {
             const modalContainer = document.getElementById('modal-container');
-            modalContainer.innerHTML = `
-                <div class="modal-backdrop"></div>
-                <div class="modal bg-white p-6 rounded-lg shadow-xl w-11/12 md:max-w-md">
-                    <h3 class="text-xl font-bold mb-4">${title}</h3>
-                    <div id="modal-content">${content}</div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button id="modal-cancel" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Annulla</button>
-                        <button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button>
-                    </div>
-                </div>`;
+            modalContainer.innerHTML = `<div class="modal-backdrop"></div><div class="modal bg-white p-6 rounded-lg shadow-xl w-11/12 md:max-w-md"><h3 class="text-xl font-bold mb-4">${title}</h3><div id="modal-content">${content}</div><div class="flex justify-end gap-3 mt-6"><button id="modal-cancel" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Annulla</button><button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button></div></div>`;
             modalContainer.classList.remove('hidden');
             document.getElementById('modal-cancel').onclick = () => modalContainer.classList.add('hidden');
             document.getElementById('modal-confirm').onclick = onConfirm;
         };
         const hideModal = () => document.getElementById('modal-container').classList.add('hidden');
 
-        // --- ADMIN LOGIC ---
-        window.loginAdmin = () => {
+        window.loginAdmin = async () => {
             const password = document.getElementById('admin-password').value;
-            if (WAREHOUSES[password]) {
-                currentWarehouseId = password;
-                document.getElementById('warehouse-name').innerText = WAREHOUSES[password];
-                pickupsCollection = collection(db, 'warehouses', currentWarehouseId, 'pickups');
+            const loginButton = document.getElementById('admin-login-button');
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Accesso...';
+
+            try {
+                const authenticateWarehouse = httpsCallable(functions, 'authenticateWarehouse');
+                const result = await authenticateWarehouse({ password: password });
+                
+                if (result.data.error) {
+                    throw new Error(result.data.error);
+                }
+
+                const token = result.data.token;
+                await signInWithCustomToken(auth, token);
+                
+                currentWarehouseId = result.data.warehouseId;
+                isSuperAdmin = currentWarehouseId === 'superadmin';
+                document.getElementById('warehouse-name').innerText = result.data.warehouseName;
+
+                if (isSuperAdmin) {
+                    pickupsCollection = collectionGroup(db, 'pickups');
+                    document.getElementById('add-pickup-container').style.display = 'none';
+                } else {
+                    pickupsCollection = collection(db, 'warehouses', currentWarehouseId, 'pickups');
+                    document.getElementById('add-pickup-container').style.display = 'block';
+                }
                 showView('admin-dashboard-view');
                 listenForPickupsAdmin();
-            } else { 
-                showToast("Password magazzino non valida.", true); 
+
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                showToast(error.message || "Password non valida.", true);
+            } finally {
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Accedi';
             }
         };
         
@@ -358,11 +311,10 @@
             const palletCountValue = document.getElementById('pallet-count').value;
             const clientNameValue = document.getElementById('client-name').value;
             const clientStandValue = document.getElementById('client-stand').value;
-            const clientNotificationEmailValue = document.getElementById('client-notification-email').value;
             const pickupAddressValue = document.getElementById('pickup-address').value;
 
-            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim() || !clientNotificationEmailValue.trim()) {
-                showToast("Tutti i campi cliente e indirizzo sono obbligatori.", true); return;
+            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim()) {
+                showToast("Fiera, Cliente/Stand e Indirizzo sono obbligatori.", true); return;
             }
             if (!palletCountValue || isNaN(parseInt(palletCountValue)) || parseInt(palletCountValue) < 1) {
                 showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true); return;
@@ -389,11 +341,11 @@
             const uniqueCode = `RIT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
             try {
-                await addDoc(pickupsCollection, {
+                await addDoc(collection(db, 'warehouses', currentWarehouseId, 'pickups'), {
                     warehouseId: currentWarehouseId,
                     clientName: clientNameValue, // Fiera
                     clientStand: clientStandValue, // Stand
-                    clientNotificationEmail: clientNotificationEmailValue,
+                    clientNotificationEmail: "", // Inizialmente vuoto
                     palletCount: parseInt(palletCountValue),
                     palletDesc: document.getElementById('pallet-desc').value,
                     packages: packages,
@@ -425,7 +377,7 @@
                 ongoingList.innerHTML = '';
                 completedList.innerHTML = '';
 
-                const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), path: doc.ref.path }));
 
                 const statusOrder = { 'Richiesta Inviata': 1, 'Date Proposte': 2, 'Programmato': 3, 'Da Ritirare': 4, 'Completato': 5 };
                 docs.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
@@ -478,23 +430,33 @@
             let actionButtonsHTML = '';
             if (pickup.status === 'Richiesta Inviata') {
                 actionButtonsHTML = `<div class="flex gap-2">
-                    <button onclick="window.proposeDates('${pickup.id}')" class="bg-yellow-500 text-white text-sm font-bold py-2 px-3 rounded-lg hover:bg-yellow-600 transition">Controproponi</button>
-                    <button onclick="window.confirmClientDate('${pickup.id}')" class="btn-secondary text-sm font-bold py-2 px-3 rounded-lg">Conferma Data Cliente</button>
+                    <button onclick="window.proposeDates('${pickup.path}')" class="bg-yellow-500 text-white text-sm font-bold py-2 px-3 rounded-lg hover:bg-yellow-600 transition">Controproponi</button>
+                    <button onclick="window.confirmClientDate('${pickup.path}')" class="btn-secondary text-sm font-bold py-2 px-3 rounded-lg">Conferma Data Cliente</button>
                 </div>`;
             } else if (pickup.status === 'Programmato') {
-                 actionButtonsHTML = `<button onclick="window.markAsCompleted('${pickup.id}')" class="btn-secondary font-bold py-2 px-4 rounded-lg"><i class="fas fa-check mr-2"></i>Segna Completato</button>`;
+                 actionButtonsHTML = `<button onclick="window.markAsCompleted('${pickup.path}')" class="btn-secondary font-bold py-2 px-4 rounded-lg"><i class="fas fa-check mr-2"></i>Segna Completato</button>`;
             }
             
             const packagesText = Array.isArray(pickup.packages) && pickup.packages.length > 0
                 ? pickup.packages.map((pkg, i) => `Collo ${i+1}: ${pkg.dimension || 'N/D'} - ${pkg.weight || 'N/D'}`).join('<br>')
                 : 'N/D';
             
+            let superAdminEmailHTML = '';
+            if (isSuperAdmin) {
+                superAdminEmailHTML = `
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                    <label for="email-input-${pickup.id}" class="text-sm font-medium text-gray-700">Email Notifiche Cliente:</label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="email" id="email-input-${pickup.id}" value="${pickup.clientNotificationEmail || ''}" class="w-full p-2 border rounded-lg transition" placeholder="Aggiungi email cliente...">
+                        <button onclick="window.updateClientEmail('${pickup.path}', '${pickup.id}')" class="btn-primary px-4 rounded-lg text-sm">Salva</button>
+                    </div>
+                </div>`;
+            }
+
             const footerHTML = `
                 <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-                    <div>
-                        ${actionButtonsHTML}
-                    </div>
-                    <button onclick="window.deletePickup('${pickup.id}')" class="text-gray-400 hover:text-red-500 transition-colors duration-300 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center">
+                    <div>${actionButtonsHTML}</div>
+                    <button onclick="window.deletePickup('${pickup.path}')" class="text-gray-400 hover:text-red-500 transition-colors duration-300 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center">
                         <i class="fas fa-trash-alt fa-sm"></i>
                     </button>
                 </div>
@@ -515,17 +477,33 @@
                 </div>
                 <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
                     <div class="md:col-span-2"><i class="fas fa-box-open fa-fw text-gray-400 mr-2"></i><strong>Dettagli Colli:</strong><br><div class="pl-6">${packagesText}</div></div>
-                    <div class="md:col-span-2 mt-1"><i class="fas fa-at fa-fw text-gray-400 mr-2"></i><strong>Email Notifiche:</strong> ${pickup.clientNotificationEmail || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-map-marker-alt fa-fw text-gray-400 mr-2"></i><strong>Indirizzo:</strong> ${pickup.pickupAddress || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-user-tag fa-fw text-gray-400 mr-2"></i><strong>Referente:</strong> ${pickup.pickupContactName || 'N/D'} (${pickup.pickupContactPhone || 'N/D'})</div>
                 </div>
+                ${superAdminEmailHTML}
                 ${footerHTML}
             `;
             return card;
         }
         
-        window.confirmClientDate = async (pickupId) => {
-            const docRef = doc(pickupsCollection, pickupId);
+        window.updateClientEmail = async (docPath, pickupId) => {
+            const emailInput = document.getElementById(`email-input-${pickupId}`);
+            const newEmail = emailInput.value.trim();
+            if (!newEmail) {
+                showToast("Inserisci un indirizzo email valido.", true);
+                return;
+            }
+            try {
+                await updateDoc(doc(db, docPath), { clientNotificationEmail: newEmail });
+                showToast("Email del cliente aggiornata!");
+            } catch (e) {
+                console.error("Errore aggiornamento email:", e);
+                showToast("Errore durante l'aggiornamento.", true);
+            }
+        };
+        
+        window.confirmClientDate = async (docPath) => {
+            const docRef = doc(db, docPath);
             try {
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists() && docSnap.data().clientProposedDate) {
@@ -540,7 +518,7 @@
             } catch (e) { console.error(e); showToast("Errore durante la conferma.", true); }
         };
 
-        window.proposeDates = (pickupId) => {
+        window.proposeDates = (docPath) => {
             const content = `<p class="text-sm mb-4">Inserisci fino a 3 date.</p>
                 <input type="datetime-local" id="date1" class="w-full p-2 border rounded mb-2"><input type="datetime-local" id="date2" class="w-full p-2 border rounded mb-2"><input type="datetime-local" id="date3" class="w-full p-2 border rounded">`;
             showModal('Proponi Date Alternative', content, async () => {
@@ -548,30 +526,30 @@
                 if (dates.length === 0) { showToast('Inserisci almeno una data.', true); return; }
                 
                 try {
-                    await updateDoc(doc(pickupsCollection, pickupId), { proposedDates: dates, status: 'Date Proposte', clientProposedDate: null });
+                    await updateDoc(doc(db, docPath), { proposedDates: dates, status: 'Date Proposte', clientProposedDate: null });
                     showToast('Controproposta inviata!');
                     hideModal();
                 } catch(e) { console.error(e); showToast('Errore nel salvataggio.', true); }
             }, 'Invia Proposte');
         };
 
-        window.markAsCompleted = async (pickupId) => {
+        window.markAsCompleted = async (docPath) => {
             showModal('Conferma Completamento', '<p>Sei sicuro di voler segnare questo ritiro come completato?</p>', async () => {
                 try {
-                    await updateDoc(doc(pickupsCollection, pickupId), { status: 'Completato' });
+                    await updateDoc(doc(db, docPath), { status: 'Completato' });
                     showToast('Ritiro completato!');
                     hideModal();
                 } catch(e) { console.error(e); showToast("Errore durante l'aggiornamento.", true); }
             }, 'Conferma', 'btn-secondary');
         }
 
-        window.deletePickup = (pickupId) => {
+        window.deletePickup = (docPath) => {
             showModal(
                 'Conferma Eliminazione',
                 '<p>Sei sicuro di voler eliminare definitivamente questo ritiro? L\'azione non è reversibile.</p>',
                 async () => {
                     try {
-                        await deleteDoc(doc(pickupsCollection, pickupId));
+                        await deleteDoc(doc(db, docPath));
                         showToast('Ritiro eliminato con successo!');
                         hideModal();
                     } catch (e) {
@@ -597,23 +575,17 @@
             const code = document.getElementById('client-code').value.trim().toUpperCase();
             if (!code) return showToast("Inserisci un codice.", true);
             
-            let foundPickup = null;
-            for (const whId in WAREHOUSES) {
-                const q = query(collection(db, 'warehouses', whId, 'pickups'), where("uniqueCode", "==", code));
-                const snapshot = await getDocs(q);
-                if (!snapshot.empty) {
-                    foundPickup = snapshot.docs[0];
-                    break;
-                }
-            }
+            const q = query(collectionGroup(db, 'pickups'), where("uniqueCode", "==", code));
+            const snapshot = await getDocs(q);
             
-            if (!foundPickup) return showToast("Codice non valido.", true);
+            if (snapshot.empty) return showToast("Codice non valido.", true);
             
-            pickupsCollection = collection(db, 'warehouses', foundPickup.data().warehouseId, 'pickups');
+            const foundPickup = snapshot.docs[0];
+            const docPath = foundPickup.ref.path;
             currentPickupId = foundPickup.id;
 
             if (clientUnsubscribe) clientUnsubscribe();
-            clientUnsubscribe = onSnapshot(doc(pickupsCollection, currentPickupId), (doc) => {
+            clientUnsubscribe = onSnapshot(doc(db, docPath), (doc) => {
                 if(doc.exists()) {
                     renderClientView(doc.data());
                 } else { logout(); }
@@ -682,7 +654,7 @@
             const proposedDateValue = document.getElementById('client-proposed-date').value;
             if (!proposedDateValue) { return showToast("Per favore, proponi una data e un'ora.", true); }
             try {
-                await updateDoc(doc(pickupsCollection, currentPickupId), { 
+                await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), { 
                     status: 'Richiesta Inviata', 
                     clientNotes: document.getElementById('client-notes').value,
                     clientProposedDate: new Date(proposedDateValue)
@@ -695,7 +667,7 @@
             const selectedDateValue = document.querySelector('input[name="date-proposal"]:checked');
             if (!selectedDateValue) return showToast('Per favore, seleziona una data.', true);
             try {
-                await updateDoc(doc(pickupsCollection, currentPickupId), { 
+                await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), { 
                     status: 'Programmato', 
                     pickupDateTime: new Date(selectedDateValue.value),
                     proposedDates: [], 
@@ -711,7 +683,7 @@
                 const reason = document.getElementById('reschedule-reason').value;
                 const note = `RICHIESTA DI RIPROGRAMMAZIONE. ${reason ? 'Motivo: ' + reason : ''}`;
                 try {
-                    await updateDoc(doc(pickupsCollection, currentPickupId), { 
+                    await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), { 
                         status: 'Da Ritirare', 
                         pickupDateTime: null, 
                         proposedDates: [], 
@@ -735,7 +707,7 @@
                 if (!newProposedDate) { return showToast("Inserisci una nuova data.", true); }
                 
                 try {
-                    await updateDoc(doc(pickupsCollection, currentPickupId), {
+                    await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), {
                         status: 'Richiesta Inviata',
                         clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
                         clientProposedDate: new Date(newProposedDate),
