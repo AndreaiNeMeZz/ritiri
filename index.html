@@ -13,24 +13,19 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* Custom Styles for Emotiva Brand */
         :root {
             --emotiva-purple: #9c6da5;
             --emotiva-purple-dark: #8a5f93;
-            --emotiva-purple-light: #f4eff6;
             --emotiva-green: #5cb85c;
             --emotiva-green-dark: #4a934a;
-            --emotiva-text-dark-bg: #333; /* Light gray text for dark backgrounds */
-            --emotiva-text-light-bg: #333; /* Dark text for light backgrounds (cards) */
+            --emotiva-text-dark-bg: #333;
+            --emotiva-text-light-bg: #333;
         }
-
-        /* Set a transparent background to blend with the parent site */
         body { 
             font-family: 'Poppins', sans-serif; 
             background-color: transparent;
             color: var(--emotiva-text-dark-bg);
         }
-
         .btn-primary {
             background-color: var(--emotiva-purple); color: white; transition: all 0.3s ease;
             box-shadow: 0 4px 14px 0 rgba(156, 109, 165, 0.39);
@@ -39,7 +34,6 @@
             background-color: var(--emotiva-purple-dark); transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(156, 109, 165, 0.5);
         }
-        
         .btn-secondary {
             background-color: var(--emotiva-green); color: white; transition: all 0.3s ease;
             box-shadow: 0 4px 14px 0 rgba(92, 184, 92, 0.39);
@@ -48,12 +42,9 @@
             background-color: var(--emotiva-green-dark); transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(92, 184, 92, 0.5);
         }
-        
         .view { display: none; }
         .view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .toast {
             visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333;
             color: #fff; text-align: center; border-radius: 8px; padding: 16px;
@@ -61,38 +52,30 @@
             transition: all 0.5s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        
         .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 50; }
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 60; }
-        
-        /* Glassmorphism card style */
         .glass-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(30, 30, 40, 0.6);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         input, textarea {
-            background-color: rgba(255, 255, 255, 0.1) !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
             border-color: rgba(255, 255, 255, 0.2) !important;
             color: var(--emotiva-text-dark-bg) !important;
         }
-        input::placeholder, textarea::placeholder {
-            color: #a0aec0 !important;
-        }
+        input::placeholder, textarea::placeholder { color: #a0aec0 !important; }
         input:focus, textarea:focus { border-color: var(--emotiva-purple) !important; box-shadow: 0 0 0 2px rgba(156, 109, 165, 0.5) !important; }
-        
         .tab-button.active { border-color: var(--emotiva-purple); color: var(--emotiva-purple); }
     </style>
 </head>
 <body class="antialiased">
 
-    <div class="w-full mx-auto px-4">
+    <div id="main-content-wrapper" class="w-full mx-auto px-4">
         <header class="text-center mb-8 pt-8">
-            <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12">
+            <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12" onerror="this.style.display='none'">
             <h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Ritiri</h1>
         </header>
 
@@ -229,9 +212,16 @@
             if (!user) { signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e)); }
         });
 
+        const sendHeight = () => {
+            const height = document.getElementById('main-content-wrapper').scrollHeight;
+            window.parent.postMessage({ type: 'resize', height: height }, '*');
+        };
+
         window.showView = (viewId) => {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
+            currentView = viewId;
+            setTimeout(sendHeight, 50);
         };
 
         window.showToast = (message, isError = false) => {
@@ -285,13 +275,14 @@
                 currentWarehouseId = result.data.warehouseId;
                 isSuperAdmin = currentWarehouseId === 'superadmin';
                 document.getElementById('warehouse-name').innerText = result.data.warehouseName;
-
+                
+                const addPickupContainer = document.getElementById('add-pickup-container');
                 if (isSuperAdmin) {
                     pickupsCollection = collectionGroup(db, 'pickups');
-                    document.getElementById('add-pickup-container').style.display = 'none';
+                    if(addPickupContainer) addPickupContainer.style.display = 'none';
                 } else {
                     pickupsCollection = collection(db, 'warehouses', currentWarehouseId, 'pickups');
-                    document.getElementById('add-pickup-container').style.display = 'block';
+                    if(addPickupContainer) addPickupContainer.style.display = 'block';
                 }
                 showView('admin-dashboard-view');
                 listenForPickupsAdmin();
@@ -338,6 +329,7 @@
                     container.appendChild(packageDiv);
                 }
             }
+            sendHeight();
         });
 
         document.getElementById('add-pickup-form').addEventListener('submit', async (e) => {
@@ -437,6 +429,7 @@
                 if (completedCount === 0) {
                     completedList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro completato.</p>';
                 }
+                sendHeight();
             });
         }
 
@@ -604,6 +597,7 @@
             
             document.getElementById(`tab-content-${tabName}`).style.display = 'block';
             document.getElementById(`tab-${tabName}`).classList.add('active');
+            sendHeight();
         }
 
         // --- CLIENT LOGIC ---
@@ -684,6 +678,7 @@
                         ${actionsHTML}`;
                     break;
             }
+            sendHeight();
         }
         
         window.requestPickup = async () => {
@@ -754,6 +749,9 @@
                 } catch(e) { console.error(e); showToast("Errore. Riprova.", true); }
             }, 'Invia Nuova Proposta');
         };
+
+        // Send initial height
+        setTimeout(sendHeight, 200);
     </script>
 </body>
 </html>
