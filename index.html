@@ -20,7 +20,7 @@
             --emotiva-purple-light: #f4eff6;
             --emotiva-green: #5cb85c;
             --emotiva-green-dark: #4a934a;
-            --emotiva-text-dark-bg: #333; /* Light gray text for dark backgrounds */
+            --emotiva-text-dark-bg: #EAEAEA; /* Light gray text for dark backgrounds */
             --emotiva-text-light-bg: #333; /* Dark text for light backgrounds (cards) */
         }
 
@@ -90,7 +90,7 @@
 </head>
 <body class="antialiased">
 
-    <div class="w-full max-w-4xl mx-auto px-4">
+    <div class="w-full mx-auto px-4">
         <header class="text-center mb-8 pt-8">
             <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12">
             <h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Ritiri</h1>
@@ -232,7 +232,6 @@
         window.showView = (viewId) => {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            currentView = viewId;
         };
 
         window.showToast = (message, isError = false) => {
