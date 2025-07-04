@@ -13,18 +13,24 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        /* Custom Styles for Emotiva Brand */
         :root {
             --emotiva-purple: #9c6da5;
             --emotiva-purple-dark: #8a5f93;
             --emotiva-purple-light: #f4eff6;
             --emotiva-green: #5cb85c;
             --emotiva-green-dark: #4a934a;
-            --emotiva-text: #333;
+            --emotiva-text-dark-bg: #E0E0E0; /* Light gray text for dark backgrounds */
+            --emotiva-text-light-bg: #333; /* Dark text for light backgrounds (cards) */
         }
+
+        /* Set a transparent background to blend with the parent site */
         body { 
             font-family: 'Poppins', sans-serif; 
             background-color: transparent;
+            color: var(--emotiva-text-dark-bg);
         }
+
         .btn-primary {
             background-color: var(--emotiva-purple); color: white; transition: all 0.3s ease;
             box-shadow: 0 4px 14px 0 rgba(156, 109, 165, 0.39);
@@ -33,6 +39,7 @@
             background-color: var(--emotiva-purple-dark); transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(156, 109, 165, 0.5);
         }
+        
         .btn-secondary {
             background-color: var(--emotiva-green); color: white; transition: all 0.3s ease;
             box-shadow: 0 4px 14px 0 rgba(92, 184, 92, 0.39);
@@ -41,9 +48,12 @@
             background-color: var(--emotiva-green-dark); transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(92, 184, 92, 0.5);
         }
+        
         .view { display: none; }
         .view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .toast {
             visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333;
             color: #fff; text-align: center; border-radius: 8px; padding: 16px;
@@ -51,23 +61,28 @@
             transition: all 0.5s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        
         .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 50; }
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 60; }
+        
+        input, textarea {
+            color: var(--emotiva-text-light-bg);
+        }
         input:focus, textarea:focus { border-color: var(--emotiva-purple) !important; box-shadow: 0 0 0 2px var(--emotiva-purple-light) !important; }
         .tab-button.active { border-color: var(--emotiva-purple); color: var(--emotiva-purple); }
     </style>
 </head>
-<body class="text-emotiva-text antialiased">
+<body class="antialiased">
 
-    <div class="w-full max-w-4xl mx-auto">
+    <div class="w-full max-w-4xl mx-auto px-4">
         <header class="text-center mb-8 pt-8">
             <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Piattaforma Ritiri</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Ritiri</h1>
         </header>
 
         <main id="app-container">
             <!-- Role Selection View -->
-            <div id="role-selection-view" class="view active text-center bg-white p-8 rounded-xl shadow-lg">
+            <div id="role-selection-view" class="view active text-center bg-white p-8 rounded-xl shadow-lg text-emotiva-text-light-bg">
                 <h2 class="text-2xl font-semibold mb-6">Seleziona il tuo ruolo</h2>
                 <div class="flex flex-col md:flex-row gap-4 justify-center">
                     <button onclick="showView('admin-login-view')" class="btn-primary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user-shield mr-2"></i> Coordinatore / Magazzino</button>
@@ -76,7 +91,7 @@
             </div>
 
             <!-- Admin Login View -->
-            <div id="admin-login-view" class="view bg-white p-8 rounded-xl shadow-lg">
+            <div id="admin-login-view" class="view bg-white p-8 rounded-xl shadow-lg text-emotiva-text-light-bg">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center">Accesso Area Riservata</h2>
                 <input type="password" id="admin-password" placeholder="Inserisci password" class="w-full p-3 border border-gray-300 rounded-lg mb-4 transition">
@@ -84,7 +99,7 @@
             </div>
 
             <!-- Client Login View -->
-            <div id="client-login-view" class="view bg-white p-8 rounded-xl shadow-lg">
+            <div id="client-login-view" class="view bg-white p-8 rounded-xl shadow-lg text-emotiva-text-light-bg">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center">Accesso Cliente</h2>
                 <p class="text-center text-gray-600 mb-4">Inserisci il codice univoco per gestire il tuo ritiro.</p>
@@ -96,13 +111,13 @@
             <div id="admin-dashboard-view" class="view">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-2xl font-semibold">Pannello di Controllo</h2>
+                        <h2 class="text-2xl font-semibold text-white">Pannello di Controllo</h2>
                         <p id="warehouse-name" class="text-lg" style="color: var(--emotiva-purple);"></p>
                     </div>
-                    <button onclick="logout()" class="text-red-500 hover:underline">Esci</button>
+                    <button onclick="logout()" class="text-red-400 hover:text-red-500 hover:underline">Esci</button>
                 </div>
                 
-                <div id="add-pickup-container" class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <div id="add-pickup-container" class="bg-white p-6 rounded-xl shadow-lg mb-8 text-emotiva-text-light-bg">
                     <h3 class="text-xl font-semibold mb-4">Aggiungi Materiale Cliente</h3>
                     <form id="add-pickup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <h4 class="md:col-span-2 text-lg font-medium text-gray-700 border-b pb-2">Cliente</h4>
@@ -128,11 +143,11 @@
                     </form>
                 </div>
                 
-                <div>
-                    <div class="border-b border-gray-200">
+                <div class="text-emotiva-text-dark-bg">
+                    <div class="border-b border-gray-700">
                         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                             <button id="tab-ongoing" onclick="showTab('ongoing')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active">In corso</button>
-                            <button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Completati</button>
+                            <button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500">Completati</button>
                         </nav>
                     </div>
                     <div id="tab-content-ongoing" class="tab-content active"><div id="pickups-list-ongoing" class="space-y-4 mt-6"></div></div>
@@ -146,7 +161,7 @@
                     <h2 class="text-2xl font-semibold" id="client-view-title">Dettagli Ritiro</h2>
                     <button onclick="logout()" class="text-red-500 hover:underline">Esci</button>
                 </div>
-                <div id="client-content-area" class="bg-white p-6 rounded-xl shadow-lg"></div>
+                <div id="client-content-area" class="bg-white p-6 rounded-xl shadow-lg text-emotiva-text-light-bg"></div>
             </div>
         </main>
     </div>
@@ -169,13 +184,20 @@
             appId: "1:1082517021408:web:075f0aee13fdd2a6496685"
         };
         
+        const WAREHOUSES = {
+            'superadmin': 'Super Amministratore',
+            '1q': 'Magazzino Principale',
+            '2w': 'Deposito Secondario',
+            '3e': 'Logistica Esterna'
+        };
+
         let db, auth, pickupsCollection, functions;
         let app;
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            functions = getFunctions(app, 'europe-west3'); // Assicurati che la regione sia corretta
+            functions = getFunctions(app, 'europe-west3');
         } catch (error) {
             console.error("Errore di configurazione Firebase:", error);
             showToast("Configurazione Firebase mancante o errata.", true);
@@ -188,9 +210,7 @@
         let isSuperAdmin = false;
 
         onAuthStateChanged(auth, user => {
-            if (!user) {
-                signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e));
-            }
+            if (!user) { signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e)); }
         });
 
         window.showView = (viewId) => {
@@ -215,15 +235,15 @@
             document.getElementById('client-code').value = '';
             document.getElementById('admin-password').value = '';
             
-            await signOut(auth); // Esegui il logout
-            await signInAnonymously(auth); // Rientra come anonimo
+            await signOut(auth);
+            await signInAnonymously(auth);
 
             showView('role-selection-view');
         }
 
         const showModal = (title, content, onConfirm, confirmText = 'Conferma', confirmClass = 'btn-primary') => {
             const modalContainer = document.getElementById('modal-container');
-            modalContainer.innerHTML = `<div class="modal-backdrop"></div><div class="modal bg-white p-6 rounded-lg shadow-xl w-11/12 md:max-w-md"><h3 class="text-xl font-bold mb-4">${title}</h3><div id="modal-content">${content}</div><div class="flex justify-end gap-3 mt-6"><button id="modal-cancel" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Annulla</button><button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button></div></div>`;
+            modalContainer.innerHTML = `<div class="modal-backdrop"></div><div class="modal bg-white p-6 rounded-lg shadow-xl w-11/12 md:max-w-md text-emotiva-text-light-bg"><h3 class="text-xl font-bold mb-4">${title}</h3><div id="modal-content">${content}</div><div class="flex justify-end gap-3 mt-6"><button id="modal-cancel" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Annulla</button><button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button></div></div>`;
             modalContainer.classList.remove('hidden');
             document.getElementById('modal-cancel').onclick = () => modalContainer.classList.add('hidden');
             document.getElementById('modal-confirm').onclick = onConfirm;
@@ -397,10 +417,10 @@
                 });
 
                 if (ongoingCount === 0) {
-                    ongoingList.innerHTML = '<p class="text-gray-500 p-4">Nessun ritiro in corso.</p>';
+                    ongoingList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro in corso.</p>';
                 }
                 if (completedCount === 0) {
-                    completedList.innerHTML = '<p class="text-gray-500 p-4">Nessun ritiro completato.</p>';
+                    completedList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro completato.</p>';
                 }
             });
         }
@@ -415,7 +435,7 @@
 
         function createAdminPickupCard(pickup) {
             const card = document.createElement('div');
-            card.className = 'bg-white p-4 rounded-lg shadow-md border-l-4';
+            card.className = 'bg-white p-4 rounded-lg shadow-md border-l-4 text-emotiva-text-light-bg';
             const config = STATUS_CONFIG[pickup.status] || STATUS_CONFIG['Da Ritirare'];
             card.style.borderColor = `var(--${config.border.split('-')[1]}-500)`;
             const pickupDate = pickup.pickupDateTime ? new Date(pickup.pickupDateTime.seconds * 1000).toLocaleString('it-IT') : 'Da definire';
@@ -477,6 +497,7 @@
                 </div>
                 <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
                     <div class="md:col-span-2"><i class="fas fa-box-open fa-fw text-gray-400 mr-2"></i><strong>Dettagli Colli:</strong><br><div class="pl-6">${packagesText}</div></div>
+                    <div class="md:col-span-2 mt-1"><i class="fas fa-at fa-fw text-gray-400 mr-2"></i><strong>Email Notifiche:</strong> ${pickup.clientNotificationEmail || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-map-marker-alt fa-fw text-gray-400 mr-2"></i><strong>Indirizzo:</strong> ${pickup.pickupAddress || 'N/D'}</div>
                     <div class="md:col-span-2 mt-1"><i class="fas fa-user-tag fa-fw text-gray-400 mr-2"></i><strong>Referente:</strong> ${pickup.pickupContactName || 'N/D'} (${pickup.pickupContactPhone || 'N/D'})</div>
                 </div>
