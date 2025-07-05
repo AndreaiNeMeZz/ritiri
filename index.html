@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Ritiri Emotiva</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
@@ -79,11 +76,10 @@
     <div id="main-content-wrapper" class="w-full mx-auto px-4">
         <header class="text-center mb-8 pt-8">
             <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12" onerror="this.style.display='none'">
-            <h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Gestione Logistica</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Ritiri</h1>
         </header>
 
         <main id="app-container">
-            <!-- Role Selection View -->
             <div id="role-selection-view" class="view active text-center glass-card p-8">
                 <h2 class="text-2xl font-semibold mb-6 text-white">Seleziona il tuo ruolo</h2>
                 <div class="flex flex-col md:flex-row gap-4 justify-center">
@@ -92,7 +88,6 @@
                 </div>
             </div>
 
-            <!-- Admin Login View -->
             <div id="admin-login-view" class="view glass-card p-8">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Area Riservata</h2>
@@ -100,7 +95,6 @@
                 <button id="admin-login-button" onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
             </div>
 
-            <!-- Client Login View -->
             <div id="client-login-view" class="view glass-card p-8">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Cliente</h2>
@@ -109,7 +103,6 @@
                 <button id="client-login-button" onclick="loginClient()" class="w-full btn-secondary font-bold py-3 px-6 rounded-lg">Verifica Codice</button>
             </div>
 
-            <!-- Admin Dashboard View -->
             <div id="admin-dashboard-view" class="view">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -157,7 +150,6 @@
                 </div>
             </div>
 
-            <!-- Client View -->
             <div id="client-view" class="view">
                  <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-semibold text-white" id="client-view-title">Dettagli Ritiro</h2>
@@ -206,7 +198,7 @@
         }
 
         let currentView = 'role-selection-view';
-        let currentPickupId = null;
+        let currentPickupDocPath = null; // Changed to hold the full document path for client
         let currentWarehouseId = null; 
         let adminUnsubscribe, clientUnsubscribe;
         let isSuperAdmin = false;
@@ -237,7 +229,7 @@
         window.logout = async () => {
             if (adminUnsubscribe) adminUnsubscribe();
             if (clientUnsubscribe) clientUnsubscribe();
-            currentPickupId = null;
+            currentPickupDocPath = null; // Reset for client
             currentWarehouseId = null;
             isSuperAdmin = false;
             document.getElementById('client-code').value = '';
@@ -615,7 +607,10 @@
             
             const foundPickup = snapshot.docs[0];
             const docPath = foundPickup.ref.path;
-            currentPickupId = foundPickup.id;
+            currentPickupDocPath = docPath; // Store the full path for client operations
+
+            // No need to set currentWarehouseId for client, as we use docPath directly
+            // currentWarehouseId = foundPickup.data().warehouseId; // Not strictly needed for client updates
 
             if (clientUnsubscribe) clientUnsubscribe();
             clientUnsubscribe = onSnapshot(doc(db, docPath), (doc) => {
@@ -687,8 +682,13 @@
         window.requestPickup = async () => {
             const proposedDateValue = document.getElementById('client-proposed-date').value;
             if (!proposedDateValue) { return showToast("Per favore, proponi una data e un'ora.", true); }
+            if (!currentPickupDocPath) { // Safety check
+                showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+                console.error("currentPickupDocPath is undefined in requestPickup");
+                return;
+            }
             try {
-                await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), { 
+                await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
                     status: 'Richiesta Inviata', 
                     clientNotes: document.getElementById('client-notes').value,
                     clientProposedDate: new Date(proposedDateValue)
@@ -699,9 +699,14 @@
 
         window.confirmSlot = async () => {
             const selectedDateValue = document.querySelector('input[name="date-proposal"]:checked');
-            if (!selectedDateValue) return showToast('Per favore, seleziona una data.', true);
+            if (!selectedDateValue) return showToast('Per favor, seleziona una data.', true);
+            if (!currentPickupDocPath) { // Safety check
+                showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+                console.error("currentPickupDocPath is undefined in confirmSlot");
+                return;
+            }
             try {
-                await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), { 
+                await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
                     status: 'Programmato', 
                     pickupDateTime: new Date(selectedDateValue.value),
                     proposedDates: [], 
@@ -716,8 +721,14 @@
             showModal('Richiedi Modifica Ritiro', content, async () => {
                 const reason = document.getElementById('reschedule-reason').value;
                 const note = `RICHIESTA DI RIPROGRAMMAZIONE. ${reason ? 'Motivo: ' + reason : ''}`;
+                if (!currentPickupDocPath) { // Safety check
+                    showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+                    console.error("currentPickupDocPath is undefined in requestReschedule");
+                    hideModal(); // Hide modal on error
+                    return;
+                }
                 try {
-                    await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), { 
+                    await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
                         status: 'Da Ritirare', 
                         pickupDateTime: null, 
                         proposedDates: [], 
@@ -739,9 +750,14 @@
             showModal('Proponi una Nuova Data', content, async () => {
                 const newProposedDate = document.getElementById('client-reproposed-date').value;
                 if (!newProposedDate) { return showToast("Inserisci una nuova data.", true); }
-                
+                if (!currentPickupDocPath) { // Safety check
+                    showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+                    console.error("currentPickupDocPath is undefined in rejectAndRepropose");
+                    hideModal(); // Hide modal on error
+                    return;
+                }
                 try {
-                    await updateDoc(doc(db, 'warehouses', WAREHOUSES[currentWarehouseId], 'pickups', currentPickupId), {
+                    await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
                         status: 'Richiesta Inviata',
                         clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
                         clientProposedDate: new Date(newProposedDate),
