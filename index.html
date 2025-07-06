@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Ritiri Emotiva</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
@@ -80,6 +83,7 @@
         </header>
 
         <main id="app-container">
+            <!-- Role Selection View -->
             <div id="role-selection-view" class="view active text-center glass-card p-8">
                 <h2 class="text-2xl font-semibold mb-6 text-white">Seleziona il tuo ruolo</h2>
                 <div class="flex flex-col md:flex-row gap-4 justify-center">
@@ -88,6 +92,7 @@
                 </div>
             </div>
 
+            <!-- Admin Login View -->
             <div id="admin-login-view" class="view glass-card p-8">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Area Riservata</h2>
@@ -95,6 +100,7 @@
                 <button id="admin-login-button" onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
             </div>
 
+            <!-- Client Login View -->
             <div id="client-login-view" class="view glass-card p-8">
                 <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
                 <h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Cliente</h2>
@@ -103,6 +109,7 @@
                 <button id="client-login-button" onclick="loginClient()" class="w-full btn-secondary font-bold py-3 px-6 rounded-lg">Verifica Codice</button>
             </div>
 
+            <!-- Admin Dashboard View -->
             <div id="admin-dashboard-view" class="view">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -150,6 +157,7 @@
                 </div>
             </div>
 
+            <!-- Client View -->
             <div id="client-view" class="view">
                  <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-semibold text-white" id="client-view-title">Dettagli Ritiro</h2>
@@ -185,13 +193,13 @@
             '3e': 'Logistica Esterna'
         };
 
-        let db, auth, pickupsCollection, functions;
+        let db, auth, pickupsCollection, functions; // Aggiunto 'functions' qui
         let app;
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            functions = getFunctions(app, 'europe-west3');
+            functions = getFunctions(app, 'europe-west3'); // Inizializza le funzioni qui
         } catch (error) {
             console.error("Errore di configurazione Firebase:", error);
             showToast("Configurazione Firebase mancante o errata.", true);
@@ -596,29 +604,59 @@
         }
 
         // --- CLIENT LOGIC ---
+        // Funzione loginClient aggiornata per usare la Cloud Function
         window.loginClient = async () => {
             const code = document.getElementById('client-code').value.trim().toUpperCase();
-            if (!code) return showToast("Inserisci un codice.", true);
+            if (!code) {
+                return showToast("Inserisci un codice.", true);
+            }
             
-            const q = query(collectionGroup(db, 'pickups'), where("uniqueCode", "==", code));
-            const snapshot = await getDocs(q);
-            
-            if (snapshot.empty) return showToast("Codice non valido.", true);
-            
-            const foundPickup = snapshot.docs[0];
-            const docPath = foundPickup.ref.path;
-            currentPickupDocPath = docPath; // Store the full path for client operations
+            // Mostra lo stato di caricamento sul pulsante
+            const loginButton = document.getElementById('client-login-button');
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifica...';
 
-            // No need to set currentWarehouseId for client, as we use docPath directly
-            // currentWarehouseId = foundPickup.data().warehouseId; // Not strictly needed for client updates
+            try {
+                // Chiama la Cloud Function per validare il codice e ottenere un token
+                const validateClientCode = httpsCallable(functions, 'validateClientCode');
+                const result = await validateClientCode({ uniqueCode: code });
 
-            if (clientUnsubscribe) clientUnsubscribe();
-            clientUnsubscribe = onSnapshot(doc(db, docPath), (doc) => {
-                if(doc.exists()) {
-                    renderClientView(doc.data());
-                } else { logout(); }
-            });
-            showView('client-view');
+                // La Cloud Function solleva un errore HttpsError in caso di problemi,
+                // quindi non dovrebbe esserci un result.data.error diretto qui.
+                // Se la funzione non ha lanciato un errore ma qualcosa non va, controlla result.data
+                
+                const token = result.data.token;
+                const docPath = result.data.docPath; // Ottieni il percorso completo del documento dal risultato della Cloud Function
+
+                // Autentica l'utente client con il custom token
+                await signInWithCustomToken(auth, token);
+                
+                // Memorizza il percorso completo del documento per le operazioni successive del client
+                currentPickupDocPath = docPath; 
+
+                // Sottoscrivi le modifiche al documento specifico del ritiro
+                if (clientUnsubscribe) clientUnsubscribe(); // Annulla la sottoscrizione precedente se esiste
+                
+                clientUnsubscribe = onSnapshot(doc(db, docPath), (docSnapshot) => { 
+                    if(docSnapshot.exists()) {
+                        renderClientView(docSnapshot.data());
+                    } else { 
+                        // Se il documento non esiste più (es. eliminato dall'admin), disconnetti il client
+                        logout(); 
+                        showToast("Il tuo ritiro non è più disponibile.", true);
+                    }
+                });
+                showView('client-view');
+
+            } catch (error) {
+                console.error("Client login error:", error);
+                // Mostra un messaggio di errore all'utente
+                showToast(error.message || "Codice non valido o errore di accesso.", true);
+            } finally {
+                // Ripristina lo stato del pulsante
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Verifica Codice';
+            }
         };
 
         function renderClientView(data) {
@@ -688,7 +726,8 @@
                 return;
             }
             try {
-                await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
+                // Per le operazioni di update, usiamo currentPickupDocPath
+                await updateDoc(doc(db, currentPickupDocPath), { 
                     status: 'Richiesta Inviata', 
                     clientNotes: document.getElementById('client-notes').value,
                     clientProposedDate: new Date(proposedDateValue)
@@ -706,7 +745,8 @@
                 return;
             }
             try {
-                await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
+                // Per le operazioni di update, usiamo currentPickupDocPath
+                await updateDoc(doc(db, currentPickupDocPath), { 
                     status: 'Programmato', 
                     pickupDateTime: new Date(selectedDateValue.value),
                     proposedDates: [], 
@@ -728,7 +768,8 @@
                     return;
                 }
                 try {
-                    await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
+                    // Per le operazioni di update, usiamo currentPickupDocPath
+                    await updateDoc(doc(db, currentPickupDocPath), { 
                         status: 'Da Ritirare', 
                         pickupDateTime: null, 
                         proposedDates: [], 
@@ -757,7 +798,8 @@
                     return;
                 }
                 try {
-                    await updateDoc(doc(db, currentPickupDocPath), { // Use currentPickupDocPath
+                    // Per le operazioni di update, usiamo currentPickupDocPath
+                    await updateDoc(doc(db, currentPickupDocPath), { 
                         status: 'Richiesta Inviata',
                         clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
                         clientProposedDate: new Date(newProposedDate),
