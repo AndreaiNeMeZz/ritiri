@@ -24,7 +24,10 @@
         .text-emotiva-purple {
             color: var(--emotiva-purple);
         }
-        body { 
+        /* Ensure html and body expand to fit content within the iframe */
+        html, body {
+            height: auto; /* Allow height to be determined by content */
+            min-height: 100%; /* Ensure it takes at least 100% of viewport if content is small */
             font-family: 'Poppins', sans-serif; 
             background-color: transparent;
             color: var(--emotiva-text-dark-bg);
@@ -193,20 +196,20 @@
             '3e': 'Logistica Esterna'
         };
 
-        let db, auth, pickupsCollection, functions; // Aggiunto 'functions' qui
+        let db, auth, pickupsCollection, functions; 
         let app;
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            functions = getFunctions(app, 'europe-west3'); // Inizializza le funzioni qui
+            functions = getFunctions(app, 'europe-west3'); 
         } catch (error) {
             console.error("Errore di configurazione Firebase:", error);
             showToast("Configurazione Firebase mancante o errata.", true);
         }
 
         let currentView = 'role-selection-view';
-        let currentPickupDocPath = null; // Changed to hold the full document path for client
+        let currentPickupDocPath = null; 
         let currentWarehouseId = null; 
         let adminUnsubscribe, clientUnsubscribe;
         let isSuperAdmin = false;
@@ -216,6 +219,7 @@
         });
 
         const sendHeight = () => {
+            // Use scrollHeight for the main content wrapper
             const height = document.getElementById('main-content-wrapper').scrollHeight;
             window.parent.postMessage({ type: 'resize', height: height }, '*');
         };
@@ -224,7 +228,8 @@
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             currentView = viewId;
-            setTimeout(sendHeight, 50);
+            // Add a small delay after view change to allow content to render before sending height
+            setTimeout(sendHeight, 100); 
         };
 
         window.showToast = (message, isError = false) => {
@@ -237,7 +242,7 @@
         window.logout = async () => {
             if (adminUnsubscribe) adminUnsubscribe();
             if (clientUnsubscribe) clientUnsubscribe();
-            currentPickupDocPath = null; // Reset for client
+            currentPickupDocPath = null; 
             currentWarehouseId = null;
             isSuperAdmin = false;
             document.getElementById('client-code').value = '';
@@ -332,7 +337,7 @@
                     container.appendChild(packageDiv);
                 }
             }
-            sendHeight();
+            sendHeight(); // Send height after dynamic content is added
         });
 
         document.getElementById('add-pickup-form').addEventListener('submit', async (e) => {
@@ -393,6 +398,7 @@
                 showToast(`Ritiro aggiunto! Codice: ${uniqueCode}`);
                 e.target.reset();
                 document.getElementById('packages-container').innerHTML = '';
+                sendHeight(); // Send height after form reset and content change
             } catch(error) {
                 console.error("Errore aggiunta Firestore:", error);
                 showToast("Errore durante l'aggiunta.", true);
@@ -432,7 +438,7 @@
                 if (completedCount === 0) {
                     completedList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro completato.</p>';
                 }
-                sendHeight();
+                sendHeight(); // Send height after list content updates
             });
         }
 
@@ -813,11 +819,18 @@
 
         // Send initial height and set up observer for dynamic changes
         const observer = new MutationObserver(sendHeight);
-        observer.observe(document.getElementById('app-container'), {
+        // Observe the main content wrapper for changes, as it holds all content
+        observer.observe(document.getElementById('main-content-wrapper'), {
             childList: true,
-            subtree: true
+            subtree: true,
+            attributes: true // Observe attribute changes too, like style or class
         });
-        setTimeout(sendHeight, 200);
+        
+        // Initial height send and also on window resize
+        window.addEventListener('load', sendHeight);
+        window.addEventListener('resize', sendHeight);
+        // Fallback for initial load
+        setTimeout(sendHeight, 500); 
     </script>
 </body>
 </html>
