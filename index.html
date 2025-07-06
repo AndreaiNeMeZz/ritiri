@@ -293,7 +293,9 @@
                     if(addPickupContainer) addPickupContainer.style.display = 'block';
                 }
                 showView('admin-dashboard-view');
-                listenForPickupsAdmin();
+                listenForPickupsAdmin(); // Call listenForPickupsAdmin to populate data
+                // Add a small delay to ensure DOM updates before sending height
+                setTimeout(sendHeight, 200); 
 
             } catch (error) {
                 console.error("Authentication failed:", error);
@@ -438,7 +440,7 @@
                 if (completedCount === 0) {
                     completedList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro completato.</p>';
                 }
-                sendHeight(); // Send height after list content updates
+                sendHeight(); // Crucial: Send height AFTER the lists are populated with data
             });
         }
 
