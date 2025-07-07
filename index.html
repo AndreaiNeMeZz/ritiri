@@ -1,838 +1,788 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Ritiri Emotiva</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        :root {
-            --emotiva-purple: #9c6da5;
-            --emotiva-purple-dark: #8a5f93;
-            --emotiva-green: #5cb85c;
-            --emotiva-green-dark: #4a934a;
-            --emotiva-text-dark-bg: #EAEAEA;
-            --emotiva-text-light-bg: #333;
-        }
-        .text-emotiva-purple {
-            color: var(--emotiva-purple);
-        }
-        /* Ensure html and body expand to fit content within the iframe */
-        html, body {
-            height: auto; /* Allow height to be determined by content */
-            min-height: 100%; /* Ensure it takes at least 100% of viewport if content is small */
-            font-family: 'Poppins', sans-serif; 
-            background-color: transparent;
-            color: var(--emotiva-text-dark-bg);
-        }
-        .btn-primary {
-            background-color: var(--emotiva-purple); color: white; transition: all 0.3s ease;
-            box-shadow: 0 4px 14px 0 rgba(156, 109, 165, 0.39);
-        }
-        .btn-primary:hover {
-            background-color: var(--emotiva-purple-dark); transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(156, 109, 165, 0.5);
-        }
-        .btn-secondary {
-            background-color: var(--emotiva-green); color: white; transition: all 0.3s ease;
-            box-shadow: 0 4px 14px 0 rgba(92, 184, 92, 0.39);
-        }
-        .btn-secondary:hover {
-            background-color: var(--emotiva-green-dark); transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(92, 184, 92, 0.5);
-        }
-        .view { display: none; }
-        .view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .toast {
-            visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333;
-            color: #fff; text-align: center; border-radius: 8px; padding: 16px;
-            position: fixed; z-index: 100; left: 50%; bottom: 30px; opacity: 0;
-            transition: all 0.5s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 50; }
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 60; }
-        .glass-card {
-            background: rgba(30, 30, 40, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        input, textarea {
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            border-color: rgba(255, 255, 255, 0.2) !important;
-            color: var(--emotiva-text-dark-bg) !important;
-        }
-        input::placeholder, textarea::placeholder { color: #a0aec0 !important; }
-        input:focus, textarea:focus { border-color: var(--emotiva-purple) !important; box-shadow: 0 0 0 2px rgba(156, 109, 165, 0.5) !important; }
-        .tab-button.active { border-color: var(--emotiva-purple); color: var(--emotiva-purple); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestione Ritiri Emotiva</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts: Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+:root {
+--emotiva-purple: #9c6da5;
+--emotiva-purple-dark: #8a5f93;
+--emotiva-green: #5cb85c;
+--emotiva-green-dark: #4a934a;
+--emotiva-text-dark-bg: #EAEAEA;
+--emotiva-text-light-bg: #333;
+}
+.text-emotiva-purple {
+color: var(--emotiva-purple);
+}
+/* Ensure html and body expand to fit content within the iframe */
+html, body {
+height: auto; /* Allow height to be determined by content */
+min-height: 100%; /* Ensure it takes at least 100% of viewport if content is small */
+font-family: 'Poppins', sans-serif;
+background-color: transparent;
+color: var(--emotiva-text-dark-bg);
+margin-bottom: 4rem; /* Added margin-bottom to the body for extra space at the end */
+}
+.btn-primary {
+background-color: var(--emotiva-purple); color: white; transition: all 0.3s ease;
+box-shadow: 0 4px 14px 0 rgba(156, 109, 165, 0.39);
+}
+.btn-primary:hover {
+background-color: var(--emotiva-purple-dark); transform: translateY(-2px);
+box-shadow: 0 6px 20px 0 rgba(156, 109, 165, 0.5);
+}
+.btn-secondary {
+background-color: var(--emotiva-green); color: white; transition: all 0.3s ease;
+box-shadow: 0 4px 14px 0 rgba(92, 184, 92, 0.39);
+}
+.btn-secondary:hover {
+background-color: var(--emotiva-green-dark); transform: translateY(-2px);
+box-shadow: 0 6px 20px 0 rgba(92, 184, 92, 0.5);
+}
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.toast {
+visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333;
+color: #fff; text-align: center; border-radius: 8px; padding: 16px;
+position: fixed; z-index: 100; left: 50%; bottom: 30px; opacity: 0;
+transition: all 0.5s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+.modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 50; }
+.modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 60; }
+.glass-card {
+background: rgba(30, 30, 40, 0.6);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+border-radius: 1rem;
+border: 1px solid rgba(255, 255, 255, 0.1);
+}
+input, textarea {
+background-color: rgba(255, 255, 255, 0.05) !important;
+border-color: rgba(255, 255, 255, 0.2) !important;
+color: var(--emotiva-text-dark-bg) !important;
+}
+input::placeholder, textarea::placeholder { color: #a0aec0 !important; }
+input:focus, textarea:focus { border-color: var(--emotiva-purple) !important; box-shadow: 0 0 0 2px rgba(156, 109, 165, 0.5) !important; }
+.tab-button.active { border-color: var(--emotiva-purple); color: var(--emotiva-purple); }
+/* --- Flatpickr Overrides for Dark Theme and Styling --- */
+.flatpickr-calendar {
+background: #2d3748 !important; /* Tailwind gray-800 */
+border: 1px solid rgba(255, 255, 255, 0.1) !important;
+border-radius: 0.5rem !important;
+box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+.flatpickr-day, .flatpickr-weekday {
+color: var(--emotiva-text-dark-bg) !important;
+}
+.flatpickr-day.selected, .flatpickr-day.selected:hover, .flatpickr-day.today.selected {
+background: var(--emotiva-purple) !important;
+border-color: var(--emotiva-purple) !important;
+color: white !important;
+}
+.flatpickr-day.today {
+border-color: var(--emotiva-purple) !important;
+}
+.flatpickr-day:hover {
+background: rgba(156, 109, 165, 0.2) !important;
+}
+/* General color for the header text and arrows */
+.flatpickr-current-month {
+color: var(--emotiva-text-dark-bg) !important; /* Set general color for the header */
+}
+/* Specific styles for month/year text in the header (the one that's black) */
+.flatpickr-current-month .flatpickr-month > div.flatpickr-month, /* Targets the actual displayed month name */
+.flatpickr-current-month .cur-year { /* Targets the year input */
+color: var(--emotiva-text-dark-bg) !important;
+}
+/* Specific styles for month/year dropdown options */
+.flatpickr-current-month .flatpickr-monthDropdown-months span.flatpickr-month,
+.flatpickr-current-month .flatpickr-numInputWrapper input.flatpickr-numInput {
+color: var(--emotiva-text-dark-bg) !important; /* Colore del testo mese/anno nel dropdown */
+}
+/* Specific styles for time inputs */
+.flatpickr-time input.flatpickr-hour,
+.flatpickr-time input.flatpickr-minute,
+.flatpickr-time input.flatpickr-second {
+color: var(--emotiva-text-dark-bg) !important;
+}
+.flatpickr-time .flatpickr-am-pm {
+color: var(--emotiva-text-dark-bg) !important;
+}
+
+/* Hover states for header elements */
+.flatpickr-calendar .flatpickr-prev-month:hover svg,
+.flatpickr-calendar .flatpickr-next-month:hover svg {
+fill: var(--emotiva-purple) !important; /* Colore delle frecce al passaggio del mouse */
+}
+.flatpickr-current-month .flatpickr-month:hover,
+.flatpickr-current-month .cur-year:hover,
+.flatpickr-current-month .flatpickr-monthDropdown-months span.flatpickr-month:hover,
+.flatpickr-current-month .flatpickr-numInputWrapper input.flatpickr-numInput:hover {
+color: var(--emotiva-purple) !important; /* Colore del testo al passaggio del mouse */
+}
+/* Specific style for the dropdown arrow in the month selector */
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover svg {
+fill: var(--emotiva-purple) !important;
+}
+/* Specific style for the dropdown arrow in the year selector */
+.flatpickr-current-month .flatpickr-numInputWrapper .arrowUp:hover svg,
+.flatpickr-current-month .flatpickr-numInputWrapper .arrowDown:hover svg {
+fill: var(--emotiva-purple) !important;
+}
+
+/* Styles for the "Orario:" label */
+.flatpickr-time .time-label {
+color: var(--emotiva-text-dark-bg) !important;
+font-size: 0.875rem; /* text-sm */
+margin-right: 0.5rem;
+}
+/* Specific style for the displayed month name (e.g., "Novembre") in the header */
+.flatpickr-current-month .flatpickr-month {
+color: var(--emotiva-text-dark-bg) !important;
+}
+/* Specific style for the displayed year (e.g., "2025") in the header */
+.flatpickr-current-month .flatpickr-numInput.cur-year {
+color: var(--emotiva-text-dark-bg) !important;
+}
+</style>
 </head>
 <body class="antialiased">
 
-    <div id="main-content-wrapper" class="w-full mx-auto px-4 pb-16"> <!-- Increased pb-8 to pb-16 here -->
-        <header class="text-center mb-8 pt-8">
-            <img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12" onerror="this.style.display='none'">
-            <h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Ritiri</h1>
-        </header>
+<div id="main-content-wrapper" class="w-full mx-auto px-4 pb-16"> <!-- Increased pb-8 to pb-16 here -->
+<header class="text-center mb-8 pt-8">
+<img src="logo.png" alt="Logo Emotiva" class="mx-auto mb-4 h-12" onerror="this.style.display='none'">
+<h1 class="text-3xl md:text-4xl font-bold text-white">Piattaforma Ritiri</h1>
+</header>
 
-        <main id="app-container">
-            <!-- Role Selection View -->
-            <div id="role-selection-view" class="view active text-center glass-card p-8">
-                <h2 class="text-2xl font-semibold mb-6 text-white">Seleziona il tuo ruolo</h2>
-                <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <button onclick="showView('admin-login-view')" class="btn-primary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user-shield mr-2"></i> Coordinatore / Magazzino</button>
-                    <button onclick="showView('client-login-view')" class="btn-secondary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user mr-2"></i> Cliente</button>
-                </div>
-            </div>
+<main id="app-container">
+<!-- Role Selection View -->
+<div id="role-selection-view" class="view active text-center glass-card p-8">
+<h2 class="text-2xl font-semibold mb-6 text-white">Seleziona il tuo ruolo</h2>
+<div class="flex flex-col md:flex-row gap-4 justify-center">
+<button onclick="showView('admin-login-view')" class="btn-primary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user-shield mr-2"></i> Coordinatore / Magazzino</button>
+<button onclick="showView('client-login-view')" class="btn-secondary font-bold py-3 px-6 rounded-lg"><i class="fas fa-user mr-2"></i> Cliente</button>
+</div>
+</div>
 
-            <!-- Admin Login View -->
-            <div id="admin-login-view" class="view glass-card p-8">
-                <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
-                <h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Area Riservata</h2>
-                <input type="password" id="admin-password" placeholder="Inserisci password" class="w-full p-3 rounded-lg mb-4 transition">
-                <button id="admin-login-button" onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
-            </div>
+<!-- Admin Login View -->
+<div id="admin-login-view" class="view glass-card p-8">
+<button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
+<h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Area Riservata</h2>
+<input type="password" id="admin-password" placeholder="Inserisci password" class="w-full p-3 rounded-lg mb-4 transition">
+<button id="admin-login-button" onclick="loginAdmin()" class="w-full btn-primary font-bold py-3 px-6 rounded-lg">Accedi</button>
+</div>
 
-            <!-- Client Login View -->
-            <div id="client-login-view" class="view glass-card p-8">
-                <button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
-                <h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Cliente</h2>
-                <p class="text-center text-gray-400 mb-4">Inserisci il codice univoco per gestire il tuo ritiro.</p>
-                <input type="text" id="client-code" placeholder="Il tuo codice di ritiro" class="w-full p-3 rounded-lg mb-4 transition">
-                <button id="client-login-button" onclick="loginClient()" class="w-full btn-secondary font-bold py-3 px-6 rounded-lg">Verifica Codice</button>
-            </div>
+<!-- Client Login View -->
+<div id="client-login-view" class="view glass-card p-8">
+<button onclick="showView('role-selection-view')" class="text-emotiva-purple hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Torna indietro</button>
+<h2 class="text-2xl font-semibold mb-4 text-center text-white">Accesso Cliente</h2>
+<p class="text-center text-gray-400 mb-4">Inserisci il codice univoco per gestire il tuo ritiro.</p>
+<input type="text" id="client-code" placeholder="Il tuo codice di ritiro" class="w-full p-3 rounded-lg mb-4 transition">
+<button id="client-login-button" onclick="loginClient()" class="w-full btn-secondary font-bold py-3 px-6 rounded-lg">Verifica Codice</button>
+</div>
 
-            <!-- Admin Dashboard View -->
-            <div id="admin-dashboard-view" class="view">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-semibold text-white">Pannello di Controllo</h2>
-                        <p id="warehouse-name" class="text-lg" style="color: var(--emotiva-purple);"></p>
-                    </div>
-                    <button onclick="logout()" class="text-red-400 hover:text-red-500 hover:underline">Esci</button>
-                </div>
-                
-                <div id="add-pickup-container" class="glass-card p-6 mb-8">
-                    <h3 class="text-xl font-semibold mb-4 text-white">Aggiungi Materiale Cliente</h3>
-                    <form id="add-pickup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <h4 class="md:col-span-2 text-lg font-medium text-gray-300 border-b border-gray-700 pb-2">Cliente</h4>
-                        <input type="text" id="client-name" placeholder="Fiera" class="p-3 rounded-lg transition" required>
-                        <input type="text" id="client-stand" placeholder="Cliente/Stand" class="p-3 rounded-lg transition" required>
-                        
-                        <h4 class="md:col-span-2 text-lg font-medium text-gray-300 mt-4 border-b border-gray-700 pb-2">Dati Spedizione</h4>
-                        <input type="number" id="pallet-count" placeholder="Numero Bancali/Colli" class="p-3 rounded-lg transition" required min="1">
-                        <div id="packages-container" class="md:col-span-2 grid grid-cols-1 gap-y-4"></div>
-                        <textarea id="pallet-desc" placeholder="Descrizione contenuto" class="p-3 rounded-lg md:col-span-2 transition" rows="2"></textarea>
-                        
-                        <h4 class="md:col-span-2 text-lg font-medium text-gray-300 mt-4 border-b border-gray-700 pb-2">Dati per il Corriere</h4>
-                        <textarea id="pickup-address" placeholder="Indirizzo di ritiro completo" class="p-3 rounded-lg md:col-span-2 transition" rows="3" required></textarea>
-                        <input type="text" id="pickup-contact-name" placeholder="Nome referente magazzino" class="p-3 rounded-lg transition">
-                        <input type="tel" id="pickup-contact-phone" placeholder="Telefono referente" class="p-3 rounded-lg transition">
-                        
-                        <h4 class="md:col-span-2 text-lg font-medium text-gray-300 mt-4 border-b border-gray-700 pb-2">Proponi Date di Ritiro (Opzionale)</h4>
-                        <input type="datetime-local" id="initial-date-1" class="p-3 rounded-lg transition">
-                        <input type="datetime-local" id="initial-date-2" class="p-3 rounded-lg transition">
-                        <input type="datetime-local" id="initial-date-3" class="p-3 rounded-lg md:col-span-2 transition">
+<!-- Admin Dashboard View -->
+<div id="admin-dashboard-view" class="view">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="text-2xl font-semibold text-white">Pannello di Controllo</h2>
+<p id="warehouse-name" class="text-lg" style="color: var(--emotiva-purple);"></p>
+</div>
+<button onclick="logout()" class="text-red-400 hover:text-red-500 hover:underline">Esci</button>
+</div>
+<div id="add-pickup-container" class="glass-card p-6 mb-8">
+<h3 class="text-xl font-semibold mb-4 text-white">Aggiungi Materiale Cliente</h3>
+<form id="add-pickup-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+<h4 class="md:col-span-2 text-lg font-medium text-gray-300 border-b border-gray-700 pb-2">Cliente</h4>
+<input type="text" id="client-name" placeholder="Fiera" class="p-3 rounded-lg transition" required>
+<input type="text" id="client-stand" placeholder="Cliente/Stand" class="p-3 rounded-lg transition" required>
+<h4 class="md:col-span-2 text-lg font-medium text-gray-300 mt-4 border-b border-gray-700 pb-2">Dati Spedizione</h4>
+<input type="number" id="pallet-count" placeholder="Numero Bancali/Colli" class="p-3 rounded-lg transition" required min="1">
+<div id="packages-container" class="md:col-span-2 grid grid-cols-1 gap-y-4"></div>
+<textarea id="pallet-desc" placeholder="Descrizione contenuto" class="p-3 rounded-lg md:col-span-2 transition" rows="2"></textarea>
+<h4 class="md:col-span-2 text-lg font-medium text-gray-300 mt-4 border-b border-gray-700 pb-2">Dati per il Corriere</h4>
+<textarea id="pickup-address" placeholder="Indirizzo di ritiro completo" class="p-3 rounded-lg md:col-span-2 transition" rows="3" required></textarea>
+<input type="text" id="pickup-contact-name" placeholder="Nome referente magazzino" class="p-3 rounded-lg transition">
+<input type="tel" id="pickup-contact-phone" placeholder="Telefono referente" class="p-3 rounded-lg transition">
+<h4 class="md:col-span-2 text-lg font-medium text-gray-300 mt-4 border-b border-gray-700 pb-2">Proponi Data e Ora di Ritiro</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+<input type="text" id="pickup-date-input" placeholder="Seleziona Data" class="p-3 rounded-lg transition" readonly>
+<div class="flex items-center">
+<span class="text-sm text-gray-300 mr-2">Orario:</span>
+<input type="text" id="pickup-time-input" placeholder="Seleziona Ora" class="w-full p-3 rounded-lg transition" readonly>
+</div>
+</div>
 
-                        <button type="submit" class="md:col-span-2 w-full btn-primary font-bold py-3 px-6 rounded-lg mt-4">Aggiungi e Genera Codice</button>
-                    </form>
-                </div>
-                
-                <div>
-                    <div class="border-b border-gray-700">
-                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <button id="tab-ongoing" onclick="showTab('ongoing')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active">In corso</button>
-                            <button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500">Completati</button>
-                        </nav>
-                    </div>
-                    <div id="tab-content-ongoing" class="tab-content active"><div id="pickups-list-ongoing" class="space-y-4 mt-6"></div></div>
-                    <div id="tab-content-completed" class="tab-content" style="display: none;"><div id="pickups-list-completed" class="space-y-4 mt-6"></div></div>
-                </div>
-            </div>
+<button type="submit" class="md:col-span-2 w-full btn-primary font-bold py-3 px-6 rounded-lg mt-4">Aggiungi e Genera Codice</button>
+</form>
+</div>
+<div>
+<div class="border-b border-gray-700">
+<nav class="-mb-px flex space-x-8" aria-label="Tabs">
+<button id="tab-ongoing" onclick="showTab('ongoing')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm active">In corso</button>
+<button id="tab-completed" onclick="showTab('completed')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500">Completati</button>
+</nav>
+</div>
+<div id="tab-content-ongoing" class="tab-content active"><div id="pickups-list-ongoing" class="space-y-4 mt-6"></div></div>
+<div id="tab-content-completed" class="tab-content" style="display: none;"><div id="pickups-list-completed" class="space-y-4 mt-6"></div></div>
+</div>
+</div>
 
-            <!-- Client View -->
-            <div id="client-view" class="view">
-                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-semibold text-white" id="client-view-title">Dettagli Ritiro</h2>
-                    <button onclick="logout()" class="text-red-400 hover:text-red-500 hover:underline">Esci</button>
-                </div>
-                <div id="client-content-area" class="glass-card p-6"></div>
-            </div>
-        </main>
-    </div>
+<!-- Client View -->
+<div id="client-view" class="view">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-semibold text-white" id="client-view-title">Dettagli Ritiro</h2>
+<button onclick="logout()" class="text-red-400 hover:text-red-500 hover:underline">Esci</button>
+</div>
+<div id="client-content-area" class="glass-card p-6"></div>
+</div>
+</main>
+</div>
 
-    <div id="modal-container" class="hidden"></div>
-    <div id="toast" class="toast"></div>
+<div id="modal-container" class="hidden"></div>
+<div id="toast" class="toast"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script> <!-- Italian locale -->
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAD3gr0W-dQ8WydozzVZV63uXegxhbYi0Y",
-            authDomain: "logistica-ritiri-app-personale.firebaseapp.com",
-            projectId: "logistica-ritiri-app-personale",
-            storageBucket: "logistica-ritiri-app-personale.firebasestorage.app",
-            messagingSenderId: "1082517021408",
-            appId: "1:1082517021408:web:075f0aee13fdd2a6496685"
-        };
-        
-        const WAREHOUSES = {
-            'superadmin': 'Super Amministratore',
-            '1q': 'Magazzino Principale',
-            '2w': 'Deposito Secondario',
-            '3e': 'Logistica Esterna'
-        };
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, doc, updateDoc, onSnapshot, deleteDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
-        let db, auth, pickupsCollection, functions; 
-        let app;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            functions = getFunctions(app, 'europe-west3'); 
-        } catch (error) {
-            console.error("Errore di configurazione Firebase:", error);
-            showToast("Configurazione Firebase mancante o errata.", true);
-        }
+const firebaseConfig = {
+apiKey: "AIzaSyAD3gr0W-dQ8WydozzVZV63uXegxhbYi0Y",
+authDomain: "logistica-ritiri-app-personale.firebaseapp.com",
+projectId: "logistica-ritiri-app-personale",
+storageBucket: "logistica-ritiri-app-personale.firebasestorage.app",
+messagingSenderId: "1082517021408",
+appId: "1:1082517021408:web:075f0aee13fdd2a6496685"
+};
 
-        let currentView = 'role-selection-view';
-        let currentPickupDocPath = null; 
-        let currentWarehouseId = null; 
-        let adminUnsubscribe, clientUnsubscribe;
-        let isSuperAdmin = false;
+let db, auth, pickupsCollection, functions;
+let app;
+try {
+app = initializeApp(firebaseConfig);
+db = getFirestore(app);
+auth = getAuth(app);
+functions = getFunctions(app, 'europe-west3');
+} catch (error) {
+console.error("Errore di configurazione Firebase:", error);
+showToast("Configurazione Firebase mancante o errata.", true);
+}
 
-        onAuthStateChanged(auth, user => {
-            if (!user) { signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e)); }
-        });
+let currentView = 'role-selection-view';
+let currentPickupDocPath = null;
+let currentWarehouseId = null;
+let adminUnsubscribe, clientUnsubscribe;
+let isSuperAdmin = false;
 
-        const sendHeight = () => {
-            // Use scrollHeight for the main content wrapper
-            const height = document.getElementById('main-content-wrapper').scrollHeight;
-            window.parent.postMessage({ type: 'resize', height: height }, '*');
-        };
+onAuthStateChanged(auth, user => {
+if (!user) { signInAnonymously(auth).catch(e => console.error("Login anonimo fallito", e)); }
+});
 
-        window.showView = (viewId) => {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            currentView = viewId;
-            // Add a small delay after view change to allow content to render before sending height
-            setTimeout(sendHeight, 100); 
-        };
+const sendHeight = () => {
+// Use scrollHeight for the main content wrapper
+const height = document.getElementById('main-content-wrapper').scrollHeight;
+window.parent.postMessage({ type: 'resize', height: height }, '*');
+};
 
-        window.showToast = (message, isError = false) => {
-            const toast = document.getElementById("toast");
-            toast.textContent = message;
-            toast.className = `toast show ${isError ? 'bg-red-600' : 'bg-gray-800'}`;
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
-        };
+window.showView = (viewId) => {
+document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+document.getElementById(viewId).classList.add('active');
+currentView = viewId;
+// Add a small delay after view change to allow content to render before sending height
+setTimeout(sendHeight, 100);
+};
 
-        window.logout = async () => {
-            if (adminUnsubscribe) adminUnsubscribe();
-            if (clientUnsubscribe) clientUnsubscribe();
-            currentPickupDocPath = null; 
-            currentWarehouseId = null;
-            isSuperAdmin = false;
-            document.getElementById('client-code').value = '';
-            document.getElementById('admin-password').value = '';
-            
-            await signOut(auth);
-            await signInAnonymously(auth);
+window.showToast = (message, isError = false) => {
+const toast = document.getElementById("toast");
+toast.textContent = message;
+toast.className = `toast show ${isError ? 'bg-red-600' : 'bg-gray-800'}`;
+setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
+};
 
-            showView('role-selection-view');
-        }
+window.logout = async () => {
+if (adminUnsubscribe) adminUnsubscribe();
+if (clientUnsubscribe) clientUnsubscribe();
+currentPickupDocPath = null;
+currentWarehouseId = null;
+isSuperAdmin = false;
+document.getElementById('client-code').value = '';
+document.getElementById('admin-password').value = '';
+await signOut(auth);
+await signInAnonymously(auth);
 
-        const showModal = (title, content, onConfirm, confirmText = 'Conferma', confirmClass = 'btn-primary') => {
-            const modalContainer = document.getElementById('modal-container');
-            modalContainer.innerHTML = `<div class="modal-backdrop"></div><div class="modal glass-card p-6 text-emotiva-text-dark-bg"><h3 class="text-xl font-bold mb-4">${title}</h3><div id="modal-content">${content}</div><div class="flex justify-end gap-3 mt-6"><button id="modal-cancel" class="bg-gray-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600">Annulla</button><button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button></div></div>`;
-            modalContainer.classList.remove('hidden');
-            document.getElementById('modal-cancel').onclick = () => modalContainer.classList.add('hidden');
-            document.getElementById('modal-confirm').onclick = onConfirm;
-        };
-        const hideModal = () => document.getElementById('modal-container').classList.add('hidden');
+showView('role-selection-view');
+}
 
-        window.loginAdmin = async () => {
-            const password = document.getElementById('admin-password').value;
-            const loginButton = document.getElementById('admin-login-button');
-            loginButton.disabled = true;
-            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Accesso...';
+const showModal = (title, content, onConfirm, confirmText = 'Conferma', confirmClass = 'btn-primary') => {
+const modalContainer = document.getElementById('modal-container');
+modalContainer.innerHTML = `<div class="modal-backdrop"></div><div class="modal glass-card p-6 text-emotiva-text-dark-bg"><h3 class="text-xl font-bold mb-4">${title}</h3><div id="modal-content">${content}</div><div class="flex justify-end gap-3 mt-6"><button id="modal-cancel" class="bg-gray-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600">Annulla</button><button id="modal-confirm" class="${confirmClass} font-bold py-2 px-4 rounded-lg">${confirmText}</button></div></div>`;
+modalContainer.classList.remove('hidden');
+document.getElementById('modal-cancel').onclick = () => modalContainer.classList.add('hidden');
+document.getElementById('modal-confirm').onclick = onConfirm;
+};
+const hideModal = () => document.getElementById('modal-container').classList.add('hidden');
 
-            try {
-                const authenticateWarehouse = httpsCallable(functions, 'authenticateWarehouse');
-                const result = await authenticateWarehouse({ password: password });
-                
-                if (result.data.error) {
-                    throw new Error(result.data.error);
-                }
+window.loginAdmin = async () => {
+const password = document.getElementById('admin-password').value;
+const loginButton = document.getElementById('admin-login-button');
+loginButton.disabled = true;
+loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Accesso...';
 
-                const token = result.data.token;
-                await signInWithCustomToken(auth, token);
-                
-                currentWarehouseId = result.data.warehouseId;
-                isSuperAdmin = currentWarehouseId === 'superadmin';
-                document.getElementById('warehouse-name').innerText = result.data.warehouseName;
-                
-                const addPickupContainer = document.getElementById('add-pickup-container');
-                if (isSuperAdmin) {
-                    pickupsCollection = collectionGroup(db, 'pickups');
-                    if(addPickupContainer) addPickupContainer.style.display = 'none';
-                } else {
-                    pickupsCollection = collection(db, 'warehouses', currentWarehouseId, 'pickups');
-                    if(addPickupContainer) addPickupContainer.style.display = 'block';
-                }
-                showView('admin-dashboard-view');
-                listenForPickupsAdmin(); // Call listenForPickupsAdmin to populate data
-                // Add a small delay to ensure DOM updates before sending height
-                setTimeout(sendHeight, 200); 
+try {
+const authenticateWarehouse = httpsCallable(functions, 'authenticateWarehouse');
+const result = await authenticateWarehouse({ password: password });
+if (result.data.error) {
+throw new Error(result.data.error);
+}
 
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                showToast(error.message || "Password non valida.", true);
-            } finally {
-                loginButton.disabled = false;
-                loginButton.innerHTML = 'Accedi';
-            }
-        };
-        
-        const palletCountInput = document.getElementById('pallet-count');
-        palletCountInput.addEventListener('input', () => {
-            const count = parseInt(palletCountInput.value) || 0;
-            const container = document.getElementById('packages-container');
-            container.innerHTML = '';
+const token = result.data.token;
+await signInWithCustomToken(auth, token);
+currentWarehouseId = result.data.warehouseId;
+isSuperAdmin = currentWarehouseId === 'superadmin';
+document.getElementById('warehouse-name').innerText = result.data.warehouseName;
+const addPickupContainer = document.getElementById('add-pickup-container');
+if (isSuperAdmin) {
+pickupsCollection = collectionGroup(db, 'pickups');
+if(addPickupContainer) addPickupContainer.style.display = 'none';
+} else {
+pickupsCollection = collection(db, 'warehouses', currentWarehouseId, 'pickups');
+if(addPickupContainer) addPickupContainer.style.display = 'block';
+}
+showView('admin-dashboard-view');
+listenForPickupsAdmin(); // Call listenForPickupsAdmin to populate data
+// Add a small delay to ensure DOM updates before sending height
+setTimeout(sendHeight, 200);
 
-            if (count > 0 && count < 20) {
-                for (let i = 1; i <= count; i++) {
-                    const packageDiv = document.createElement('div');
-                    packageDiv.className = 'md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-t border-gray-700 pt-4';
-                    
-                    const label = document.createElement('label');
-                    label.className = 'font-semibold md:col-span-2 text-gray-300';
-                    label.textContent = `Dettagli Collo/Bancale ${i}`;
-                    packageDiv.appendChild(label);
+} catch (error) {
+console.error("Authentication failed:", error);
+showToast(error.message || "Password non valida.", true);
+} finally {
+loginButton.disabled = false;
+loginButton.innerHTML = 'Accedi';
+}
+};
+const palletCountInput = document.getElementById('pallet-count');
+palletCountInput.addEventListener('input', () => {
+const count = parseInt(palletCountInput.value) || 0;
+const container = document.getElementById('packages-container');
+container.innerHTML = '';
 
-                    const dimensionInput = document.createElement('input');
-                    dimensionInput.type = 'text';
-                    dimensionInput.id = `dimension-${i}`;
-                    dimensionInput.placeholder = `Dimensioni (es. 120x80x100 cm)`;
-                    dimensionInput.className = 'p-3 rounded-lg transition';
-                    packageDiv.appendChild(dimensionInput);
-                    
-                    const weightInput = document.createElement('input');
-                    weightInput.type = 'text';
-                    weightInput.id = `weight-${i}`;
-                    weightInput.placeholder = `Peso (es. 50kg)`;
-                    weightInput.className = 'p-3 rounded-lg transition';
-                    packageDiv.appendChild(weightInput);
-                    
-                    container.appendChild(packageDiv);
-                }
-            }
-            sendHeight(); // Send height after dynamic content is added
-        });
+if (count > 0 && count < 20) {
+for (let i = 1; i <= count; i++) {
+const packageDiv = document.createElement('div');
+packageDiv.className = 'md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-t border-gray-700 pt-4';
+const label = document.createElement('label');
+label.className = 'font-semibold md:col-span-2 text-gray-300';
+label.textContent = `Dettagli Collo/Bancale ${i}`;
+packageDiv.appendChild(label);
 
-        document.getElementById('add-pickup-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const palletCountValue = document.getElementById('pallet-count').value;
-            const clientNameValue = document.getElementById('client-name').value;
-            const clientStandValue = document.getElementById('client-stand').value;
-            const pickupAddressValue = document.getElementById('pickup-address').value;
+const dimensionInput = document.createElement('input');
+dimensionInput.type = 'text';
+dimensionInput.id = `dimension-${i}`;
+dimensionInput.placeholder = `Dimensioni (es. 120x80x100 cm)`;
+dimensionInput.className = 'p-3 rounded-lg transition';
+packageDiv.appendChild(dimensionInput);
+const weightInput = document.createElement('input');
+weightInput.type = 'text';
+weightInput.id = `weight-${i}`;
+weightInput.placeholder = `Peso (es. 50kg)`;
+weightInput.className = 'p-3 rounded-lg transition';
+packageDiv.appendChild(weightInput);
+container.appendChild(packageDiv);
+}
+}
+sendHeight(); // Send height after dynamic content is added
+});
 
-            if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim()) {
-                showToast("Fiera, Cliente/Stand e Indirizzo sono obbligatori.", true); return;
-            }
-            if (!palletCountValue || isNaN(parseInt(palletCountValue)) || parseInt(palletCountValue) < 1) {
-                showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true); return;
-            }
-            
-            const packages = [];
-            const count = parseInt(palletCountValue);
-            for (let i = 1; i <= count; i++) {
-                const dimensionInput = document.getElementById(`dimension-${i}`);
-                const weightInput = document.getElementById(`weight-${i}`);
-                packages.push({
-                    dimension: dimensionInput ? dimensionInput.value : 'N/D',
-                    weight: weightInput ? weightInput.value : 'N/D'
-                });
-            }
+// --- Flatpickr Initialization for fixed Date and Time Inputs ---
+const pickupDateInput = document.getElementById('pickup-date-input');
+const pickupTimeInput = document.getElementById('pickup-time-input');
 
-            const initialDates = [
-                document.getElementById('initial-date-1').value,
-                document.getElementById('initial-date-2').value,
-                document.getElementById('initial-date-3').value,
-            ].filter(Boolean).map(d => new Date(d));
-            
-            const initialStatus = initialDates.length > 0 ? 'Date Proposte' : 'Da Ritirare';
-            const uniqueCode = `RIT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+// Initialize Flatpickr for date only
+flatpickr(pickupDateInput, {
+enableTime: false, // No time selection for date input
+dateFormat: "Y-m-d",
+altInput: true,
+altFormat: "d/m/Y",
+minDate: "today",
+locale: flatpickr.l10ns.it,
+onOpen: sendHeight,
+onClose: sendHeight,
+onChange: sendHeight
+});
 
-            try {
-                await addDoc(collection(db, 'warehouses', currentWarehouseId, 'pickups'), {
-                    warehouseId: currentWarehouseId,
-                    clientName: clientNameValue, // Fiera
-                    clientStand: clientStandValue, // Stand
-                    clientNotificationEmail: "", // Inizialmente vuoto
-                    palletCount: parseInt(palletCountValue),
-                    palletDesc: document.getElementById('pallet-desc').value,
-                    packages: packages,
-                    pickupAddress: pickupAddressValue,
-                    pickupContactName: document.getElementById('pickup-contact-name').value,
-                    pickupContactPhone: document.getElementById('pickup-contact-phone').value,
-                    uniqueCode,
-                    status: initialStatus,
-                    pickupDateTime: null,
-                    clientProposedDate: null, 
-                    proposedDates: initialDates,
-                    clientNotes: '',
-                    createdAt: new Date(),
-                });
-                showToast(`Ritiro aggiunto! Codice: ${uniqueCode}`);
-                e.target.reset();
-                document.getElementById('packages-container').innerHTML = '';
-                sendHeight(); // Send height after form reset and content change
-            } catch(error) {
-                console.error("Errore aggiunta Firestore:", error);
-                showToast("Errore durante l'aggiunta.", true);
-            }
-        });
+// Initialize Flatpickr for time only
+flatpickr(pickupTimeInput, {
+enableTime: true,
+noCalendar: true, // No calendar for time input
+dateFormat: "H:i",
+altInput: true,
+altFormat: "H:i",
+locale: flatpickr.l10ns.it,
+onOpen: sendHeight,
+onClose: sendHeight,
+onChange: sendHeight
+});
+// --- End Flatpickr Initialization ---
 
-        function listenForPickupsAdmin() {
-            if (adminUnsubscribe) adminUnsubscribe();
-            adminUnsubscribe = onSnapshot(query(pickupsCollection), (snapshot) => {
-                const ongoingList = document.getElementById('pickups-list-ongoing');
-                const completedList = document.getElementById('pickups-list-completed');
-                ongoingList.innerHTML = '';
-                completedList.innerHTML = '';
 
-                const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), path: doc.ref.path }));
+document.getElementById('add-pickup-form').addEventListener('submit', async (e) => {
+e.preventDefault();
+const palletCountValue = document.getElementById('pallet-count').value;
+const clientNameValue = document.getElementById('client-name').value;
+const clientStandValue = document.getElementById('client-stand').value;
+const pickupAddressValue = document.getElementById('pickup-address').value;
 
-                const statusOrder = { 'Richiesta Inviata': 1, 'Date Proposte': 2, 'Programmato': 3, 'Da Ritirare': 4, 'Completato': 5 };
-                docs.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+if (!clientNameValue.trim() || !pickupAddressValue.trim() || !clientStandValue.trim()) {
+showToast("Fiera, Cliente/Stand e Indirizzo sono obbligatori.", true); return;
+}
+if (!palletCountValue || isNaN(parseInt(palletCountValue)) || parseInt(palletCountValue) < 1) {
+showToast("Il campo 'Numero Bancali/Colli' è obbligatorio.", true); return;
+}
+const packages = [];
+const count = parseInt(palletCountValue);
+for (let i = 1; i <= count; i++) {
+const dimensionInput = document.getElementById(`dimension-${i}`);
+const weightInput = document.getElementById(`weight-${i}`);
+packages.push({
+dimension: dimensionInput ? dimensionInput.value : 'N/D',
+weight: weightInput ? weightInput.value : 'N/D'
+});
+}
 
-                let ongoingCount = 0;
-                let completedCount = 0;
+// Get date and time from fixed inputs
+const dateStr = pickupDateInput.value;
+const timeStr = pickupTimeInput.value;
 
-                docs.forEach(p => {
-                    const card = createAdminPickupCard(p);
-                    if (p.status === 'Completato') {
-                        completedList.appendChild(card);
-                        completedCount++;
-                    } else {
-                        ongoingList.appendChild(card);
-                        ongoingCount++;
-                    }
-                });
+let combinedPickupDateTime = null;
+let initialStatus = 'Da Ritirare'; // Default status
 
-                if (ongoingCount === 0) {
-                    ongoingList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro in corso.</p>';
-                }
-                if (completedCount === 0) {
-                    completedList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro completato.</p>';
-                }
-                sendHeight(); // Crucial: Send height AFTER the lists are populated with data
-            });
-        }
+if (dateStr && timeStr) {
+// Combine date and time strings
+const dateTimeCombinedStr = `${dateStr} ${timeStr}`;
+const parsedDate = flatpickr.parseDate(dateTimeCombinedStr, "d/m/Y H:i"); // Parse using altFormat
 
-        const STATUS_CONFIG = {
-            'Da Ritirare': { text: 'Da Ritirare', color: 'bg-gray-700 text-gray-200', border: 'border-gray-500' },
-            'Richiesta Inviata': { text: 'Richiesta Cliente', color: 'bg-orange-900 bg-opacity-50 text-orange-300', border: 'border-orange-500' },
-            'Date Proposte': { text: 'In Attesa Cliente', color: 'bg-yellow-900 bg-opacity-50 text-yellow-300', border: 'border-yellow-500' },
-            'Programmato': { text: 'Programmato', color: 'bg-blue-900 bg-opacity-50 text-blue-300', border: 'border-blue-500' },
-            'Completato': { text: 'Completato', color: 'bg-green-900 bg-opacity-50 text-green-300', border: 'border-green-500' }
-        };
+if (parsedDate && parsedDate >= new Date()) {
+combinedPickupDateTime = parsedDate;
+initialStatus = 'Date Proposte'; // Status if a date/time is provided
+} else {
+showToast("La data e l'ora proposte devono essere valide e non nel passato.", true);
+return;
+}
+} else if (dateStr || timeStr) {
+// If only one of date or time is provided
+showToast("Inserisci sia la data che l'ora proposte, oppure nessuna.", true);
+return;
+}
+const uniqueCode = `RIT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-        function createAdminPickupCard(pickup) {
-            const card = document.createElement('div');
-            card.className = 'glass-card p-4 border-l-4';
-            const config = STATUS_CONFIG[pickup.status] || STATUS_CONFIG['Da Ritirare'];
-            card.style.borderColor = config.border.replace('border-', '');
-            const pickupDate = pickup.pickupDateTime ? new Date(pickup.pickupDateTime.seconds * 1000).toLocaleString('it-IT') : 'Da definire';
-            const isRescheduleRequest = pickup.status === 'Richiesta Inviata' && pickup.clientNotes && pickup.clientNotes.startsWith('RICHIESTA DI RIPROGRAMMAZIONE');
+try {
+await addDoc(collection(db, 'warehouses', currentWarehouseId, 'pickups'), {
+warehouseId: currentWarehouseId,
+clientName: clientNameValue,
+clientStand: clientStandValue,
+clientNotificationEmail: "",
+palletCount: parseInt(palletCountValue),
+palletDesc: document.getElementById('pallet-desc').value,
+packages: packages,
+pickupAddress: pickupAddressValue,
+pickupContactName: document.getElementById('pickup-contact-name').value,
+pickupContactPhone: document.getElementById('pickup-contact-phone').value,
+uniqueCode,
+status: initialStatus,
+pickupDateTime: combinedPickupDateTime, // Store the combined date/time here
+clientProposedDate: null,
+proposedDates: [], // No longer storing multiple proposals here
+clientNotes: '',
+createdAt: new Date(),
+});
+showToast(`Ritiro aggiunto! Codice: ${uniqueCode}`);
+e.target.reset();
+document.getElementById('packages-container').innerHTML = '';
+// Clear fixed date/time inputs
+pickupDateInput._flatpickr.clear();
+pickupTimeInput._flatpickr.clear();
+sendHeight();
+} catch(error) {
+console.error("Errore aggiunta Firestore:", error);
+showToast("Errore durante l'aggiunta.", true);
+}
+});
 
-            let clientProposalHTML = '';
-            if (pickup.status === 'Richiesta Inviata' && pickup.clientProposedDate) {
-                const proposedDate = new Date(pickup.clientProposedDate.seconds * 1000).toLocaleString('it-IT');
-                clientProposalHTML = `<div class="mt-2 p-2 bg-orange-900 bg-opacity-30 rounded-lg"><p class="font-semibold text-orange-300">Proposta cliente: ${proposedDate}</p></div>`;
-            }
-            
-            let actionButtonsHTML = '';
-            if (pickup.status === 'Richiesta Inviata') {
-                actionButtonsHTML = `<div class="flex gap-2">
-                    <button onclick="window.proposeDates('${pickup.path}')" class="bg-yellow-500 text-white text-sm font-bold py-2 px-3 rounded-lg hover:bg-yellow-600 transition">Controproponi</button>
-                    <button onclick="window.confirmClientDate('${pickup.path}')" class="btn-secondary text-sm font-bold py-2 px-3 rounded-lg">Conferma Data Cliente</button>
-                </div>`;
-            } else if (pickup.status === 'Programmato') {
-                 actionButtonsHTML = `<button onclick="window.markAsCompleted('${pickup.path}')" class="btn-secondary font-bold py-2 px-4 rounded-lg"><i class="fas fa-check mr-2"></i>Segna Completato</button>`;
-            }
-            
-            const packagesText = Array.isArray(pickup.packages) && pickup.packages.length > 0
-                ? pickup.packages.map((pkg, i) => `Collo ${i+1}: ${pkg.dimension || 'N/D'} - ${pkg.weight || 'N/D'}`).join('<br>')
-                : 'N/D';
-            
-            let superAdminEmailHTML = '';
-            if (isSuperAdmin) {
-                superAdminEmailHTML = `
-                <div class="mt-3 pt-3 border-t border-gray-700">
-                    <label for="email-input-${pickup.id}" class="text-sm font-medium text-gray-300">Email Notifiche Cliente:</label>
-                    <div class="flex gap-2 mt-1">
-                        <input type="email" id="email-input-${pickup.id}" value="${pickup.clientNotificationEmail || ''}" class="w-full p-2 rounded-lg transition" placeholder="Aggiungi email cliente...">
-                        <button onclick="window.updateClientEmail('${pickup.path}', '${pickup.id}')" class="btn-primary px-4 rounded-lg text-sm">Salva</button>
-                    </div>
-                </div>`;
-            }
+function listenForPickupsAdmin() {
+if (adminUnsubscribe) adminUnsubscribe();
+adminUnsubscribe = onSnapshot(query(pickupsCollection), (snapshot) => {
+const ongoingList = document.getElementById('pickups-list-ongoing');
+const completedList = document.getElementById('pickups-list-completed');
+ongoingList.innerHTML = '';
+completedList.innerHTML = '';
 
-            const footerHTML = `
-                <div class="mt-4 pt-4 border-t border-gray-700 flex justify-between items-center">
-                    <div>${actionButtonsHTML}</div>
-                    <button onclick="window.deletePickup('${pickup.path}')" class="text-gray-400 hover:text-red-500 transition-colors duration-300 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center">
-                        <i class="fas fa-trash-alt fa-sm"></i>
-                    </button>
-                </div>
-            `;
+const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), path: doc.ref.path }));
 
-            card.innerHTML = `
-                <div class="flex flex-col md:flex-row justify-between">
-                    <div class="pr-8">
-                        <p class="font-bold text-lg flex items-center">${pickup.clientName} / ${pickup.clientStand} ${isRescheduleRequest ? '<span class="ml-3 text-sm font-semibold text-red-300 bg-red-900 bg-opacity-50 px-2 py-1 rounded-full">DA RIPROGRAMMARE</span>' : ''}</p>
-                        <p class="text-sm text-gray-400">${pickup.palletCount} colli - Codice: <span class="font-semibold">${pickup.uniqueCode}</span></p>
-                        ${clientProposalHTML}
-                        <p class="text-sm text-gray-500 italic mt-1">${pickup.clientNotes || ''}</p>
-                    </div>
-                    <div class="mt-4 md:mt-0 text-left md:text-right flex-shrink-0">
-                        <p class="font-semibold">Ritiro: <span class="font-normal">${pickupDate}</span></p>
-                        <p class="font-semibold mt-1"><span class="px-2 py-1 rounded-full text-xs ${config.color}">${config.text}</span></p>
-                    </div>
-                </div>
-                <div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                    <div class="md:col-span-2"><i class="fas fa-box-open fa-fw text-gray-400 mr-2"></i><strong>Dettagli Colli:</strong><br><div class="pl-6">${packagesText}</div></div>
-                    <div class="md:col-span-2 mt-1"><i class="fas fa-at fa-fw text-gray-400 mr-2"></i><strong>Email Notifiche:</strong> ${pickup.clientNotificationEmail || 'N/D'}</div>
-                    <div class="md:col-span-2 mt-1"><i class="fas fa-map-marker-alt fa-fw text-gray-400 mr-2"></i><strong>Indirizzo:</strong> ${pickup.pickupAddress || 'N/D'}</div>
-                    <div class="md:col-span-2 mt-1"><i class="fas fa-user-tag fa-fw text-gray-400 mr-2"></i><strong>Referente:</strong> ${pickup.pickupContactName || 'N/D'} (${pickup.pickupContactPhone || 'N/D'})</div>
-                </div>
-                ${superAdminEmailHTML}
-                ${footerHTML}
-            `;
-            return card;
-        }
-        
-        window.updateClientEmail = async (docPath, pickupId) => {
-            const emailInput = document.getElementById(`email-input-${pickupId}`);
-            const newEmail = emailInput.value.trim();
-            if (!newEmail) {
-                showToast("Inserisci un indirizzo email valido.", true);
-                return;
-            }
-            try {
-                await updateDoc(doc(db, docPath), { clientNotificationEmail: newEmail });
-                showToast("Email del cliente aggiornata!");
-            } catch (e) {
-                console.error("Errore aggiornamento email:", e);
-                showToast("Errore durante l'aggiornamento.", true);
-            }
-        };
-        
-        window.confirmClientDate = async (docPath) => {
-            const docRef = doc(db, docPath);
-            try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists() && docSnap.data().clientProposedDate) {
-                    await updateDoc(docRef, {
-                        pickupDateTime: docSnap.data().clientProposedDate,
-                        status: 'Programmato',
-                        clientProposedDate: null, 
-                        proposedDates: []
-                    });
-                    showToast("Data del cliente confermata!");
-                } else { showToast("Nessuna data proposta dal cliente.", true); }
-            } catch (e) { console.error(e); showToast("Errore durante la conferma.", true); }
-        };
+const statusOrder = { 'Richiesta Inviata': 1, 'Date Proposte': 2, 'Programmato': 3, 'Da Ritirare': 4, 'Completato': 5 };
+docs.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
 
-        window.proposeDates = (docPath) => {
-            const content = `<p class="text-sm mb-4">Inserisci fino a 3 date.</p>
-                <input type="datetime-local" id="date1" class="w-full p-2 border rounded mb-2"><input type="datetime-local" id="date2" class="w-full p-2 border rounded mb-2"><input type="datetime-local" id="date3" class="w-full p-2 border rounded">`;
-            showModal('Proponi Date Alternative', content, async () => {
-                const dates = [document.getElementById('date1').value, document.getElementById('date2').value, document.getElementById('date3').value].filter(Boolean).map(d => new Date(d));
-                if (dates.length === 0) { showToast('Inserisci almeno una data.', true); return; }
-                
-                try {
-                    await updateDoc(doc(db, docPath), { proposedDates: dates, status: 'Date Proposte', clientProposedDate: null });
-                    showToast('Controproposta inviata!');
-                    hideModal();
-                } catch(e) { console.error(e); showToast('Errore nel salvataggio.', true); }
-            }, 'Invia Proposte');
-        };
+let ongoingCount = 0;
+let completedCount = 0;
 
-        window.markAsCompleted = async (docPath) => {
-            showModal('Conferma Completamento', '<p>Sei sicuro di voler segnare questo ritiro come completato?</p>', async () => {
-                try {
-                    await updateDoc(doc(db, docPath), { status: 'Completato' });
-                    showToast('Ritiro completato!');
-                    hideModal();
-                } catch(e) { console.error(e); showToast("Errore durante l'aggiornamento.", true); }
-            }, 'Conferma', 'btn-secondary');
-        }
+docs.forEach(p => {
+const card = createAdminPickupCard(p);
+if (p.status === 'Completato') {
+completedList.appendChild(card);
+completedCount++;
+} else {
+ongoingList.appendChild(card);
+ongoingCount++;
+}
+});
 
-        window.deletePickup = (docPath) => {
-            showModal(
-                'Conferma Eliminazione',
-                '<p>Sei sicuro di voler eliminare definitivamente questo ritiro? L\'azione non è reversibile.</p>',
-                async () => {
-                    try {
-                        await deleteDoc(doc(db, docPath));
-                        showToast('Ritiro eliminato con successo!');
-                        hideModal();
-                    } catch (e) {
-                        console.error("Errore durante l'eliminazione:", e);
-                        showToast("Errore durante l'eliminazione.", true);
-                    }
-                },
-                'Elimina',
-                'bg-red-600 text-white hover:bg-red-700'
-            );
-        };
+if (ongoingCount === 0) {
+ongoingList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro in corso.</p>';
+}
+if (completedCount === 0) {
+completedList.innerHTML = '<p class="text-gray-400 p-4">Nessun ritiro completato.</p>';
+}
+sendHeight();
+});
+}
 
-        window.showTab = (tabName) => {
-            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById(`tab-content-${tabName}`).style.display = 'block';
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            sendHeight();
-        }
+const STATUS_CONFIG = {
+'Da Ritirare': { text: 'Da Ritirare', color: 'bg-gray-700 text-gray-200', border: 'border-gray-500' },
+'Richiesta Inviata': { text: 'Richiesta Cliente', color: 'bg-orange-900 bg-opacity-50 text-orange-300', border: 'border-orange-500' },
+'Date Proposte': { text: 'In Attesa Cliente', color: 'bg-yellow-900 bg-opacity-50 text-yellow-300', border: 'border-yellow-500' },
+'Programmato': { text: 'Programmato', color: 'bg-blue-900 bg-opacity-50 text-blue-300', border: 'border-blue-500' },
+'Completato': { text: 'Completato', color: 'bg-green-900 bg-opacity-50 text-green-300', border: 'border-green-500' }
+};
 
-        // --- CLIENT LOGIC ---
-        // Funzione loginClient aggiornata per usare la Cloud Function
-        window.loginClient = async () => {
-            const code = document.getElementById('client-code').value.trim().toUpperCase();
-            if (!code) {
-                return showToast("Inserisci un codice.", true);
-            }
-            
-            // Mostra lo stato di caricamento sul pulsante
-            const loginButton = document.getElementById('client-login-button');
-            loginButton.disabled = true;
-            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifica...';
+function createAdminPickupCard(pickup) {
+const card = document.createElement('div');
+card.className = 'glass-card p-4 border-l-4';
+const config = STATUS_CONFIG[pickup.status] || STATUS_CONFIG['Da Ritirare'];
+card.style.borderColor = config.border.replace('border-', '');
+const pickupDate = pickup.pickupDateTime ? new Date(pickup.pickupDateTime.seconds * 1000).toLocaleString('it-IT') : 'Da definire';
+const isRescheduleRequest = pickup.status === 'Richiesta Inviata' && pickup.clientNotes && pickup.clientNotes.startsWith('RICHIESTA DI RIPROGRAMMAZIONE');
 
-            try {
-                // Chiama la Cloud Function per validare il codice e ottenere un token
-                const validateClientCode = httpsCallable(functions, 'validateClientCode');
-                const result = await validateClientCode({ uniqueCode: code });
+let clientProposalHTML = '';
+if (pickup.status === 'Richiesta Inviata' && pickup.clientProposedDate) {
+const proposedDate = new Date(pickup.clientProposedDate.seconds * 1000).toLocaleString('it-IT');
+clientProposalHTML = `<div class="mt-2 p-2 bg-orange-900 bg-opacity-30 rounded-lg"><p class="font-semibold text-orange-300">Proposta cliente: ${proposedDate}</p></div>`;
+}
+let actionButtonsHTML = '';
+if (pickup.status === 'Richiesta Inviata') {
+actionButtonsHTML = `<div class="flex gap-2">
+<button onclick="window.proposeDates('${pickup.path}')" class="bg-yellow-500 text-white text-sm font-bold py-2 px-3 rounded-lg hover:bg-yellow-600 transition">Controproponi</button>
+<button onclick="window.confirmClientDate('${pickup.path}')" class="btn-secondary text-sm font-bold py-2 px-3 rounded-lg">Conferma Data Cliente</button>
+</div>`;
+} else if (pickup.status === 'Programmato') {
+actionButtonsHTML = `<button onclick="window.markAsCompleted('${pickup.path}')" class="btn-secondary font-bold py-2 px-4 rounded-lg"><i class="fas fa-check mr-2"></i>Segna Completato</button>`;
+}
+const packagesText = Array.isArray(pickup.packages) && pickup.packages.length > 0
+? pickup.packages.map((pkg, i) => `Collo ${i+1}: ${pkg.dimension || 'N/D'} - ${pkg.weight || 'N/D'}`).join('<br>')
+: 'N/D';
+let superAdminEmailHTML = '';
+if (isSuperAdmin) {
+superAdminEmailHTML = `
+<div class="mt-3 pt-3 border-t border-gray-700">
+<label for="email-input-${pickup.id}" class="text-sm font-medium text-gray-300">Email Notifiche Cliente:</label>
+<div class="flex gap-2 mt-1">
+<input type="email" id="email-input-${pickup.id}" value="${pickup.clientNotificationEmail || ''}" class="w-full p-2 rounded-lg transition" placeholder="Aggiungi email cliente...">
+<button onclick="window.updateClientEmail('${pickup.path}', '${pickup.id}')" class="btn-primary px-4 rounded-lg text-sm">Salva</button>
+</div>
+</div>`;
+}
 
-                // La Cloud Function solleva un errore HttpsError in caso di problemi,
-                // quindi non dovrebbe esserci un result.data.error diretto qui.
-                // Se la funzione non ha lanciato un errore ma qualcosa non va, controlla result.data
-                
-                const token = result.data.token;
-                const docPath = result.data.docPath; // Ottieni il percorso completo del documento dal risultato della Cloud Function
+const footerHTML = `
+<div class="mt-4 pt-4 border-t border-gray-700 flex justify-between items-center">
+<div>${actionButtonsHTML}</div>
+<button onclick="window.deletePickup('${pickup.path}')" class="text-gray-400 hover:text-red-500 transition-colors duration-300 w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center">
+<i class="fas fa-trash-alt fa-sm"></i>
+</button>
+</div>
+`;
 
-                // Autentica l'utente client con il custom token
-                await signInWithCustomToken(auth, token);
-                
-                // Memorizza il percorso completo del documento per le operazioni successive del client
-                currentPickupDocPath = docPath; 
+// Display logic for proposedDates (still supporting old format if needed)
+let proposedDatesDisplay = 'Nessuna data proposta';
+if (Array.isArray(pickup.proposedDates) && pickup.proposedDates.length > 0) {
+proposedDatesDisplay = pickup.proposedDates.map(prop => {
+// Check if it's the new object format or old Date object
+if (prop && typeof prop === 'object' && (prop.type === 'specific' || prop.type === 'slot')) {
+if (prop.type === 'specific' && prop.dateTime) {
+const date = new Date(prop.dateTime.seconds * 1000);
+return `Specifico: ${date.toLocaleDateString('it-IT')} alle ${date.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}`;
+} else if (prop.type === 'slot' && prop.date && prop.slot) {
+const date = new Date(prop.date.seconds * 1000);
+return `Fascia: ${date.toLocaleDateString('it-IT')} - ${prop.slot}`;
+}
+} else if (prop instanceof Object && 'seconds' in prop) { // Old Timestamp format
+const date = new Date(prop.seconds * 1000);
+return `Data/Ora: ${date.toLocaleDateString('it-IT')} alle ${date.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}`;
+}
+return '';
+}).filter(Boolean).join('<br>');
+}
 
-                // Sottoscrivi le modifiche al documento specifico del ritiro
-                if (clientUnsubscribe) clientUnsubscribe(); // Annulla la sottoscrizione precedente se esiste
-                
-                clientUnsubscribe = onSnapshot(doc(db, docPath), (docSnapshot) => { 
-                    if(docSnapshot.exists()) {
-                        renderClientView(docSnapshot.data());
-                    } else { 
-                        // Se il documento non esiste più (es. eliminato dall'admin), disconnetti il client
-                        logout(); 
-                        showToast("Il tuo ritiro non è più disponibile.", true);
-                    }
-                });
-                showView('client-view');
 
-            } catch (error) {
-                console.error("Client login error:", error);
-                // Mostra un messaggio di errore all'utente
-                showToast(error.message || "Codice non valido o errore di accesso.", true);
-            } finally {
-                // Ripristina lo stato del pulsante
-                loginButton.disabled = false;
-                loginButton.innerHTML = 'Verifica Codice';
-            }
-        };
+card.innerHTML = `
+<div class="flex flex-col md:flex-row justify-between">
+<div class="pr-8">
+<p class="font-bold text-lg flex items-center">${pickup.clientName} / ${pickup.clientStand} ${isRescheduleRequest ? '<span class="ml-3 text-sm font-semibold text-red-300 bg-red-900 bg-opacity-50 px-2 py-1 rounded-full">DA RIPROGRAMMARE</span>' : ''}</p>
+<p class="text-sm text-gray-400">${pickup.palletCount} colli - Codice: <span class="font-semibold">${pickup.uniqueCode}</span></p>
+${clientProposalHTML}
+<p class="text-sm text-gray-500 italic mt-1">${pickup.clientNotes || ''}</p>
+</div>
+<div class="mt-4 md:mt-0 text-left md:text-right flex-shrink-0">
+<p class="font-semibold">Ritiro: <span class="font-normal">${pickupDate}</span></p>
+<p class="font-semibold mt-1"><span class="px-2 py-1 rounded-full text-xs ${config.color}">${config.text}</span></p>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
+<div class="md:col-span-2"><i class="fas fa-box-open fa-fw text-gray-400 mr-2"></i><strong>Dettagli Colli:</strong><br><div class="pl-6">${packagesText}</div></div>
+<div class="md:col-span-2 mt-1"><i class="fas fa-calendar-alt fa-fw text-gray-400 mr-2"></i><strong>Date Proposte:</strong><br><div class="pl-6">${proposedDatesDisplay}</div></div>
+<div class="md:col-span-2 mt-1"><i class="fas fa-at fa-fw text-gray-400 mr-2"></i><strong>Email Notifiche:</strong> ${pickup.clientNotificationEmail || 'N/D'}</div>
+<div class="md:col-span-2 mt-1"><i class="fas fa-map-marker-alt fa-fw text-gray-400 mr-2"></i><strong>Indirizzo:</strong> ${pickup.pickupAddress || 'N/D'}</div>
+<div class="md:col-span-2 mt-1"><i class="fas fa-user-tag fa-fw text-gray-400 mr-2"></i><strong>Referente:</strong> ${pickup.pickupContactName || 'N/D'} (${pickup.pickupContactPhone || 'N/D'})</div>
+</div>
+${superAdminEmailHTML}
+${footerHTML}
+`;
+return card;
+}
+window.updateClientEmail = async (docPath, pickupId) => {
+const emailInput = document.getElementById(`email-input-${pickupId}`);
+const newEmail = emailInput.value.trim();
+if (!newEmail) {
+showToast("Inserisci un indirizzo email valido.", true);
+return;
+}
+try {
+await updateDoc(doc(db, docPath), { clientNotificationEmail: newEmail });
+showToast("Email del cliente aggiornata!");
+} catch (e) {
+console.error("Errore aggiornamento email:", e);
+showToast("Errore durante l'aggiornamento.", true);
+}
+};
+window.confirmClientDate = async (docPath) => {
+const selectedRadio = document.querySelector('input[name="date-proposal"]:checked');
+if (!selectedRadio) return showToast('Per favor, seleziona una data.', true);
+const selectedProposal = JSON.parse(selectedRadio.dataset.proposalJson); // Parse the stored object
 
-        function renderClientView(data) {
-            const container = document.getElementById('client-content-area');
-            const title = document.getElementById('client-view-title');
-            
-            const packagesText = Array.isArray(data.packages) && data.packages.length > 0 
-                ? data.packages.map((pkg, i) => `<p class="text-sm"><span class="font-medium text-gray-300">Collo ${i+1}:</span> ${pkg.dimension || 'N/D'} - ${pkg.weight || 'N/D'}</p>`).join('')
-                : `N/D`;
+if (!currentPickupDocPath) { // Safety check
+showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+console.error("currentPickupDocPath is undefined in confirmSlot");
+return;
+}
 
-            const baseDetails = `
-                <div class="mb-4 pb-4 border-b border-gray-700">
-                    <h4 class="text-lg font-semibold mb-2 text-white">Dati Materiale</h4>
-                    <p class="text-sm"><span class="font-medium text-gray-300">Fiera:</span> ${data.clientName || 'N/D'}</p>
-                    <p class="text-sm"><span class="font-medium text-gray-300">Stand:</span> ${data.clientStand || 'N/D'}</p>
-                    <p class="text-sm"><span class="font-medium text-gray-300">N° Colli:</span> ${data.palletCount || 'N/D'}</p>
-                    <p class="text-sm"><span class="font-medium text-gray-300">Descrizione:</span> ${data.palletDesc || 'N/A'}</p>
-                    <div class="mt-2">${packagesText}</div>
-                </div>
-                <div class="mb-4 pb-4 border-b border-gray-700">
-                    <h4 class="text-lg font-semibold mb-2 text-white">Dettagli Ritiro</h4>
-                    <p class="text-sm"><span class="font-medium text-gray-300">Indirizzo:</span> ${data.pickupAddress || 'N/D'}</p>
-                    <p class="text-sm"><span class="font-medium text-gray-300">Referente in loco:</span> ${data.pickupContactName || 'N/D'} (${data.pickupContactPhone || 'N/D'})</p>
-                </div>`;
-            
-            switch(data.status) {
-                case 'Da Ritirare':
-                    title.innerText = 'Proponi una Data di Ritiro';
-                    container.innerHTML = `${baseDetails}
-                        <p class="mb-2 font-semibold">Il tuo materiale è pronto. Proponi una data e un'ora per il ritiro:</p>
-                        <input type="datetime-local" id="client-proposed-date" class="w-full p-2 border rounded mb-2">
-                        <textarea id="client-notes" class="w-full p-2 border rounded mb-4" placeholder="Aggiungi eventuali note (opzionale)">${data.clientNotes || ''}</textarea>
-                        <button onclick="window.requestPickup()" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg">Invia Proposta di Ritiro</button>`;
-                    break;
-                case 'Richiesta Inviata':
-                    title.innerText = 'Proposta Inviata';
-                    container.innerHTML = `${baseDetails}<div class="p-4 bg-orange-900 bg-opacity-50 text-orange-300 rounded-lg text-center"><i class="fas fa-clock fa-2x mb-2"></i><p class="font-bold">Proposta inviata con successo!</p><p class="text-sm">Attendi la conferma o una controproposta.</p></div>`;
-                    break;
-                case 'Date Proposte':
-                    title.innerText = 'Proposta di Ritiro Ricevuta';
-                    let proposalsHTML = data.proposedDates.map(d => { const date = new Date(d.seconds * 1000); return `<label class="block border border-gray-600 rounded-lg p-3 mb-2 hover:bg-gray-700 cursor-pointer"><input type="radio" name="date-proposal" value="${date.toISOString()}" class="mr-3"><span class="font-semibold">${date.toLocaleDateString('it-IT', {weekday: 'long', day: 'numeric', month: 'long'})}</span> alle <span class="font-semibold">${date.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}</span></label>`; }).join('');
-                    container.innerHTML = `${baseDetails}
-                        <p class="mb-4 font-semibold text-white">Il coordinatore ha proposto le seguenti date. Scegli quella che preferisci:</p>
-                        <div class="mb-4">${proposalsHTML}</div>
-                        <button onclick="window.confirmSlot()" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg">Conferma la data selezionata</button>
-                        <button onclick="window.rejectAndRepropose()" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-500 transition mt-2">Nessuna di queste date va bene</button>`;
-                    break;
-                case 'Programmato':
-                case 'Completato':
-                    title.innerText = `Ritiro ${data.status}`;
-                    const pickupDate = new Date(data.pickupDateTime.seconds * 1000);
-                    let actionsHTML = data.status !== 'Completato' ? `<div class="mt-6 pt-6 border-t border-gray-700"><h4 class="font-semibold mb-2">Imprevisti?</h4><button onclick="window.requestReschedule()" class="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">Richiedi Modifica Ritiro</button></div>` : '';
-                    container.innerHTML = `${baseDetails}
-                        <div class="p-4 ${data.status === 'Completato' ? 'bg-green-900 bg-opacity-50 text-green-300' : 'bg-blue-900 bg-opacity-50 text-blue-300'} rounded-lg text-center"><i class="fas ${data.status === 'Completato' ? 'fa-check-circle' : 'fa-calendar-check'} fa-2x mb-2"></i><p class="font-bold">Ritiro ${data.status === 'Completato' ? 'Effettuato' : 'Confermato'}</p><p>Il <strong>${pickupDate.toLocaleDateString('it-IT')}</strong> alle <strong>${pickupDate.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}</strong></p></div>
-                        ${actionsHTML}`;
-                    break;
-            }
-            sendHeight();
-        }
-        
-        window.requestPickup = async () => {
-            const proposedDateValue = document.getElementById('client-proposed-date').value;
-            if (!proposedDateValue) { return showToast("Per favore, proponi una data e un'ora.", true); }
-            if (!currentPickupDocPath) { // Safety check
-                showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
-                console.error("currentPickupDocPath is undefined in requestPickup");
-                return;
-            }
-            try {
-                // Per le operazioni di update, usiamo currentPickupDocPath
-                await updateDoc(doc(db, currentPickupDocPath), { 
-                    status: 'Richiesta Inviata', 
-                    clientNotes: document.getElementById('client-notes').value,
-                    clientProposedDate: new Date(proposedDateValue)
-                });
-                showToast('Proposta di ritiro inviata!');
-            } catch (e) { console.error(e); showToast('Errore. Riprova.', true); }
-        };
+let pickupDateTimeToSet = null;
 
-        window.confirmSlot = async () => {
-            const selectedDateValue = document.querySelector('input[name="date-proposal"]:checked');
-            if (!selectedDateValue) return showToast('Per favor, seleziona una data.', true);
-            if (!currentPickupDocPath) { // Safety check
-                showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
-                console.error("currentPickupDocPath is undefined in confirmSlot");
-                return;
-            }
-            try {
-                // Per le operazioni di update, usiamo currentPickupDocPath
-                await updateDoc(doc(db, currentPickupDocPath), { 
-                    status: 'Programmato', 
-                    pickupDateTime: new Date(selectedDateValue.value),
-                    proposedDates: [], 
-                    clientProposedDate: null
-                });
-                showToast('Appuntamento confermato!');
-            } catch (e) { console.error(e); showToast('Errore. Riprova.', true); }
-        };
-        
-        window.requestReschedule = () => {
-            const content = `<p>Vuoi richiedere una modifica? L'appuntamento verrà annullato e potrai proporre una nuova data.</p><textarea id="reschedule-reason" class="w-full p-2 border rounded mt-4" placeholder="Motivo (opzionale)"></textarea>`;
-            showModal('Richiedi Modifica Ritiro', content, async () => {
-                const reason = document.getElementById('reschedule-reason').value;
-                const note = `RICHIESTA DI RIPROGRAMMAZIONE. ${reason ? 'Motivo: ' + reason : ''}`;
-                if (!currentPickupDocPath) { // Safety check
-                    showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
-                    console.error("currentPickupDocPath is undefined in requestReschedule");
-                    hideModal(); // Hide modal on error
-                    return;
-                }
-                try {
-                    // Per le operazioni di update, usiamo currentPickupDocPath
-                    await updateDoc(doc(db, currentPickupDocPath), { 
-                        status: 'Da Ritirare', 
-                        pickupDateTime: null, 
-                        proposedDates: [], 
-                        clientProposedDate: null,
-                        clientNotes: note 
-                    });
-                    showToast('Richiesta inviata. Proponi una nuova data.');
-                    hideModal();
-                } catch(e) { console.error(e); showToast('Errore. Riprova.', true); }
-            }, 'Conferma Richiesta');
-        };
+if (selectedProposal.type === 'specific') {
+pickupDateTimeToSet = selectedProposal.dateTime; // This is already a Date object/Timestamp from backend
+} else if (selectedProposal.type === 'slot') {
+// For slot, use the start of the day from the proposal,
+// and optionally store the slot string in notes or a new field
+pickupDateTimeToSet = selectedProposal.date; // The date part of the slot proposal
+// Could also store: clientNotes: `Ritiro confermato per fascia: ${selectedProposal.slot}`
+}
 
-        window.rejectAndRepropose = () => {
-            const content = `
-                <p class="mb-2">Proponi una nuova data e ora per il ritiro:</p>
-                <input type="datetime-local" id="client-reproposed-date" class="w-full p-2 border rounded mb-2">
-                <textarea id="reproposal-notes" class="w-full p-2 border rounded" placeholder="Note (opzionale)"></textarea>
-            `;
-            showModal('Proponi una Nuova Data', content, async () => {
-                const newProposedDate = document.getElementById('client-reproposed-date').value;
-                if (!newProposedDate) { return showToast("Inserisci una nuova data.", true); }
-                if (!currentPickupDocPath) { // Safety check
-                    showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
-                    console.error("currentPickupDocPath is undefined in rejectAndRepropose");
-                    hideModal(); // Hide modal on error
-                    return;
-                }
-                try {
-                    // Per le operazioni di update, usiamo currentPickupDocPath
-                    await updateDoc(doc(db, currentPickupDocPath), { 
-                        status: 'Richiesta Inviata',
-                        clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
-                        clientProposedDate: new Date(newProposedDate),
-                        proposedDates: [],
-                    });
-                    showToast('Nuova proposta inviata!');
-                    hideModal();
-                } catch(e) { console.error(e); showToast("Errore. Riprova.", true); }
-            }, 'Invia Nuova Proposta');
-        };
+try {
+await updateDoc(doc(db, currentPickupDocPath), {
+pickupDateTime: pickupDateTimeToSet,
+status: 'Programmato',
+clientProposedDate: null,
+proposedDates: [], // Clear proposed dates once one is confirmed
+// You might want to add a field like 'confirmedSlot' if type === 'slot'
+// Example: confirmedSlot: selectedProposal.slot || null,
+// If you need more specific time for the slot, you might set it based on the slot string
+// For example, if "Mattina" means 9 AM, you can set pickupDateTime: new Date(selectedProposal.date.seconds * 1000).setHours(9,0,0,0)
+});
+showToast('Appuntamento confermato!');
+} catch (e) { console.error(e); showToast('Errore. Riprova.', true); }
+};
+window.requestReschedule = () => {
+const content = `<p>Vuoi richiedere una modifica? L'appuntamento verrà annullato e potrai proporre una nuova data.</p><textarea id="reschedule-reason" class="w-full p-2 border rounded mt-4" placeholder="Motivo (opzionale)"></textarea>`;
+showModal('Richiedi Modifica Ritiro', content, async () => {
+const reason = document.getElementById('reschedule-reason').value;
+const note = `RICHIESTA DI RIPROGRAMMAZIONE. ${reason ? 'Motivo: ' + reason : ''}`;
+if (!currentPickupDocPath) { // Safety check
+showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+console.error("currentPickupDocPath is undefined in requestReschedule");
+hideModal(); // Hide modal on error
+return;
+}
+try {
+await updateDoc(doc(db, currentPickupDocPath), {
+status: 'Da Ritirare',
+pickupDateTime: null,
+proposedDates: [],
+clientProposedDate: null,
+clientNotes: note
+});
+showToast('Richiesta inviata. Proponi una nuova data.');
+hideModal();
+} catch(e) { console.error(e); showToast('Errore. Riprova.', true); }
+}, 'Conferma Richiesta');
+};
 
-        // Send initial height and set up observer for dynamic changes
-        const observer = new MutationObserver(sendHeight);
-        // Observe the main content wrapper for changes, as it holds all content
-        observer.observe(document.getElementById('main-content-wrapper'), {
-            childList: true,
-            subtree: true,
-            attributes: true // Observe attribute changes too, like style or class
-        });
-        
-        // Initial height send and also on window resize
-        window.addEventListener('load', sendHeight);
-        window.addEventListener('resize', sendHeight);
-        // Fallback for initial load
-        setTimeout(sendHeight, 500); 
-    </script>
+window.rejectAndRepropose = () => {
+const content = `
+<p class="mb-2">Proponi una nuova data e ora per il ritiro:</p>
+<input type="datetime-local" id="client-reproposed-date" class="w-full p-2 border rounded mb-2">
+<textarea id="reproposal-notes" class="w-full p-2 border rounded" placeholder="Note (opzionale)"></textarea>
+`;
+showModal('Proponi una Nuova Data', content, async () => {
+const newProposedDate = document.getElementById('client-reproposed-date').value;
+if (!newProposedDate) { return showToast("Inserisci una nuova data.", true); }
+if (!currentPickupDocPath) { // Safety check
+showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
+console.error("currentPickupDocPath is undefined in rejectAndRepropose");
+hideModal(); // Hide modal on error
+return;
+}
+try {
+await updateDoc(doc(db, currentPickupDocPath), {
+status: 'Richiesta Inviata',
+clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
+clientProposedDate: new Date(newProposedDate),
+proposedDates: [],
+});
+showToast('Nuova proposta inviata!');
+hideModal();
+} catch(e) { console.error(e); showToast("Errore. Riprova.", true); }
+}, 'Invia Nuova Proposta');
+};
+
+// Send initial height and set up observer for dynamic changes
+const observer = new MutationObserver(sendHeight);
+// Observe the main content wrapper for changes, as it holds all content
+observer.observe(document.getElementById('main-content-wrapper'), {
+childList: true,
+subtree: true,
+attributes: true // Observe attribute changes too, like style or class
+});
+// Initial height send and also on window resize
+window.addEventListener('load', sendHeight);
+window.addEventListener('resize', sendHeight);
+// Fallback for initial load
+setTimeout(sendHeight, 500);
+</script>
 </body>
 </html>
