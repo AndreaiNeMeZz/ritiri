@@ -638,32 +638,77 @@ window.markAsCompleted = (docPath) => {
 
 window.proposeDates = (docPath) => {
     const content = `
-        <p class="mb-2">Aggiungi una o più date/ore da proporre al cliente.</p>
-        <div id="proposals-container">
-            <div class="flex gap-2 mb-2">
-                <input type="datetime-local" class="proposal-input w-full p-2 rounded-lg transition">
+        <p class="mb-4">Aggiungi una o più date/ore da proporre al cliente.</p>
+        <div id="proposals-container" class="space-y-3">
+            <div class="proposal-row flex items-center gap-2">
+                <input type="text" class="proposal-date-input flex-grow p-3 rounded-lg transition" placeholder="Seleziona Data">
+                <input type="text" class="proposal-time-input flex-grow p-3 rounded-lg transition" placeholder="Seleziona Ora">
+                <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-500 p-2 rounded-full hover:bg-red-900 hover:bg-opacity-50 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         </div>
-        <button id="add-proposal-field" class="text-sm text-emotiva-purple hover:underline">+ Aggiungi un'altra data</button>
+        <button id="add-proposal-field" class="text-sm text-emotiva-purple hover:underline mt-4">+ Aggiungi un'altra data</button>
     `;
+
+    const initializeProposalPickers = () => {
+        document.querySelectorAll('.proposal-date-input:not(.flatpickr-input)').forEach(input => {
+            flatpickr(input, {
+                altInput: true,
+                altFormat: "d/m/Y",
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: flatpickr.l10ns.it
+            });
+        });
+        document.querySelectorAll('.proposal-time-input:not(.flatpickr-input)').forEach(input => {
+            flatpickr(input, {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                locale: flatpickr.l10ns.it
+            });
+        });
+    };
 
     showModal(
         'Proponi Date al Cliente',
         content,
         async () => {
-            const proposalInputs = document.querySelectorAll('.proposal-input');
+            const proposalRows = document.querySelectorAll('.proposal-row');
             const proposedDates = [];
-            proposalInputs.forEach(input => {
-                if (input.value) {
-                    const date = new Date(input.value);
-                    if (date > new Date()) {
-                        proposedDates.push(date);
+            let isValid = true;
+
+            proposalRows.forEach(row => {
+                const dateInput = row.querySelector('.proposal-date-input')._flatpickr.selectedDates[0];
+                const timeInput = row.querySelector('.proposal-time-input')._flatpickr.selectedDates[0];
+
+                if (dateInput && timeInput) {
+                    const combinedDate = new Date(
+                        dateInput.getFullYear(),
+                        dateInput.getMonth(),
+                        dateInput.getDate(),
+                        timeInput.getHours(),
+                        timeInput.getMinutes()
+                    );
+
+                    if (combinedDate > new Date()) {
+                        proposedDates.push(combinedDate);
+                    } else {
+                        isValid = false;
                     }
+                } else if (dateInput || timeInput) {
+                    // Se solo uno dei due è compilato, non è valido
+                    if (dateInput || timeInput) isValid = false;
                 }
             });
 
+            if (!isValid) {
+                return showToast('Per ogni proposta, inserisci sia una data che un\'ora valide e future.', true);
+            }
+
             if (proposedDates.length === 0) {
-                return showToast('Inserisci almeno una data futura valida.', true);
+                return showToast('Inserisci almeno una proposta di data e ora valida.', true);
             }
 
             try {
@@ -683,12 +728,21 @@ window.proposeDates = (docPath) => {
         'Invia Proposte'
     );
 
+    initializeProposalPickers();
+
     document.getElementById('add-proposal-field').onclick = () => {
         const container = document.getElementById('proposals-container');
         const newField = document.createElement('div');
-        newField.className = 'flex gap-2 mb-2';
-        newField.innerHTML = '<input type="datetime-local" class="proposal-input w-full p-2 rounded-lg transition">';
+        newField.className = 'proposal-row flex items-center gap-2 mt-3';
+        newField.innerHTML = `
+            <input type="text" class="proposal-date-input flex-grow p-3 rounded-lg transition" placeholder="Seleziona Data">
+            <input type="text" class="proposal-time-input flex-grow p-3 rounded-lg transition" placeholder="Seleziona Ora">
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-500 p-2 rounded-full hover:bg-red-900 hover:bg-opacity-50 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
         container.appendChild(newField);
+        initializeProposalPickers();
     };
 };
 
@@ -878,17 +932,32 @@ function renderClientView(pickup) {
             
         case 'Da Ritirare':
         case 'Richiesta Inviata':
-            actionHTML = `
-                <h4 class="text-lg font-semibold mb-3 text-white">Proponi una data e un'ora per il ritiro</h4>
-                <p class="text-gray-400 mb-4">Il magazzino valuterà la tua proposta e ti darà conferma o ti invierà delle alternative.</p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="datetime-local" id="client-proposed-date" class="w-full p-3 rounded-lg transition">
-                    <button onclick="window.proposeDateClient()" class="btn-secondary font-bold py-3 px-6 rounded-lg whitespace-nowrap">Invia Proposta</button>
-                </div>
-                <textarea id="client-notes-input" class="w-full p-3 rounded-lg transition mt-4" placeholder="Aggiungi una nota (opzionale)"></textarea>
-            `;
-            if (pickup.clientNotes) {
-                 actionHTML += `<div class="mt-4 p-3 bg-gray-900 bg-opacity-50 rounded-lg"><p class="text-sm italic text-gray-300"><b>Tue note precedenti:</b> ${pickup.clientNotes}</p></div>`;
+            if (pickup.clientProposedDate) {
+                const proposedDate = new Date(pickup.clientProposedDate.seconds * 1000);
+                actionHTML = `
+                    <h4 class="text-lg font-semibold mb-3 text-white">Proposta Inviata</h4>
+                    <p class="text-gray-300">Hai proposto il ritiro per il giorno:</p>
+                    <p class="text-xl my-2 text-emotiva-purple">${proposedDate.toLocaleString('it-IT', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                    <p class="text-gray-400">Il magazzino sta valutando la tua richiesta. Riceverai una notifica non appena sarà confermata o se ci saranno delle controproposte.</p>
+                `;
+            } else {
+                actionHTML = `
+                    <h4 class="text-lg font-semibold mb-3 text-white">Proponi una data e un'ora per il ritiro</h4>
+                    <p class="text-gray-400 mb-4">Il magazzino valuterà la tua proposta e ti darà conferma o ti invierà delle alternative.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="client-reproposed-date-picker" class="p-3 rounded-lg transition" placeholder="Seleziona Data">
+                        <input type="text" id="client-reproposed-time-picker" class="p-3 rounded-lg transition" placeholder="Seleziona Ora">
+                    </div>
+                    <textarea id="client-notes-input" class="w-full p-3 rounded-lg transition mt-4" placeholder="Aggiungi una nota (opzionale)"></textarea>
+                    <button onclick="window.proposeDateClient()" class="w-full mt-4 btn-secondary font-bold py-3 px-6 rounded-lg whitespace-nowrap">Invia Proposta</button>
+                `;
+                if (pickup.clientNotes) {
+                     actionHTML += `<div class="mt-4 p-3 bg-gray-900 bg-opacity-50 rounded-lg"><p class="text-sm italic text-gray-300"><b>Tue note precedenti:</b> ${pickup.clientNotes}</p></div>`;
+                }
+                setTimeout(() => {
+                    flatpickr("#client-reproposed-date-picker", { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", minDate: "today", locale: flatpickr.l10ns.it });
+                    flatpickr("#client-reproposed-time-picker", { enableTime: true, noCalendar: true, dateFormat: "H:i", locale: flatpickr.l10ns.it });
+                }, 0);
             }
             break;
 
@@ -900,12 +969,25 @@ function renderClientView(pickup) {
 }
 
 window.proposeDateClient = async () => {
-    const proposedDateValue = document.getElementById('client-proposed-date').value;
+    const dateInput = document.getElementById('client-reproposed-date-picker')._flatpickr.selectedDates[0];
+    const timeInput = document.getElementById('client-reproposed-time-picker')._flatpickr.selectedDates[0];
     const notes = document.getElementById('client-notes-input').value;
-    if (!proposedDateValue) return showToast('Per favore, seleziona una data e un\'ora.', true);
 
-    const proposedDate = new Date(proposedDateValue);
-    if (proposedDate < new Date()) return showToast('La data proposta non può essere nel passato.', true);
+    if (!dateInput || !timeInput) {
+        return showToast('Per favore, seleziona sia una data che un\'ora.', true);
+    }
+
+    const proposedDate = new Date(
+        dateInput.getFullYear(),
+        dateInput.getMonth(),
+        dateInput.getDate(),
+        timeInput.getHours(),
+        timeInput.getMinutes()
+    );
+
+    if (proposedDate < new Date()) {
+        return showToast('La data proposta non può essere nel passato.', true);
+    }
     if (!currentPickupDocPath) return showToast('Errore, ricarica la pagina.', true);
 
     try {
@@ -973,13 +1055,35 @@ window.requestReschedule = () => {
 
 window.rejectAndRepropose = () => {
     const content = `
-    <p class="mb-2">Proponi una nuova data e ora per il ritiro:</p>
-    <input type="datetime-local" id="client-reproposed-date" class="w-full p-3 rounded-lg transition mb-2">
-    <textarea id="reproposal-notes" class="w-full p-3 rounded-lg transition" placeholder="Note (opzionale)"></textarea>
+        <p class="mb-4">Proponi una nuova data e ora per il ritiro:</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" id="client-reproposed-date-picker" class="p-3 rounded-lg transition" placeholder="Seleziona Data">
+            <input type="text" id="client-reproposed-time-picker" class="p-3 rounded-lg transition" placeholder="Seleziona Ora">
+        </div>
+        <textarea id="reproposal-notes" class="w-full p-3 rounded-lg transition mt-4" placeholder="Note (opzionale)"></textarea>
     `;
+    
     showModal('Proponi una Nuova Data', content, async () => {
-        const newProposedDate = document.getElementById('client-reproposed-date').value;
-        if (!newProposedDate) { return showToast("Inserisci una nuova data.", true); }
+        const dateInput = document.getElementById('client-reproposed-date-picker')._flatpickr.selectedDates[0];
+        const timeInput = document.getElementById('client-reproposed-time-picker')._flatpickr.selectedDates[0];
+        const notes = document.getElementById('reproposal-notes').value;
+
+        if (!dateInput || !timeInput) {
+            return showToast("Per favore, seleziona sia una data che un'ora.", true);
+        }
+
+        const newProposedDate = new Date(
+            dateInput.getFullYear(),
+            dateInput.getMonth(),
+            dateInput.getDate(),
+            timeInput.getHours(),
+            timeInput.getMinutes()
+        );
+
+        if (newProposedDate < new Date()) {
+            return showToast("La data proposta non può essere nel passato.", true);
+        }
+
         if (!currentPickupDocPath) {
             showToast("Errore: Riferimento al ritiro non trovato. Riprova l'accesso.", true);
             hideModal();
@@ -988,14 +1092,18 @@ window.rejectAndRepropose = () => {
         try {
             await updateDoc(doc(db, currentPickupDocPath), {
                 status: 'Richiesta Inviata',
-                clientNotes: 'Controproposta del cliente: ' + document.getElementById('reproposal-notes').value,
-                clientProposedDate: new Date(newProposedDate),
+                clientNotes: 'Controproposta del cliente: ' + notes,
+                clientProposedDate: newProposedDate,
                 proposedDates: [],
             });
             showToast('Nuova proposta inviata!');
             hideModal();
         } catch(e) { console.error(e); showToast("Errore. Riprova.", true); }
     }, 'Invia Nuova Proposta');
+
+    // Inizializza i selettori di data/ora dopo aver mostrato il modale
+    flatpickr("#client-reproposed-date-picker", { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", minDate: "today", locale: flatpickr.l10ns.it });
+    flatpickr("#client-reproposed-time-picker", { enableTime: true, noCalendar: true, dateFormat: "H:i", locale: flatpickr.l10ns.it });
 };
 
 // --- FINE LOGICA LATO CLIENTE ---
